@@ -1,0 +1,232 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_0mwgc"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hqnrr"]
+bg_color = Color(0.1, 0.1, 0.1, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.29, 0.26, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bo48s"]
+bg_color = Color(0.72, 0.16, 0.14, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8qguk"]
+bg_color = Color(0.1, 0.1, 0.1, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.29, 0.26, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_136eg"]
+bg_color = Color(0.85, 0.65, 0.2, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_oj5la"]
+bg_color = Color(0.1, 0.1, 0.1, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.29, 0.26, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gss2c"]
+bg_color = Color(0.85, 0.82, 0.7, 1)
+
+[node name="HUD" type="CanvasLayer" unique_id=1602971286]
+layer = 10
+script = ExtResource("1_0mwgc")
+
+[node name="Root" type="Control" parent="." unique_id=1785309017]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Bars" type="VBoxContainer" parent="Root" unique_id=1324438729]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 8.0
+offset_bottom = 8.0
+theme_override_constants/separation = 1
+
+[node name="@Label@2" type="Label" parent="Root/Bars" unique_id=2033989734]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.85, 0.82, 0.74, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+text = "HEALTH"
+
+[node name="HealthBar" type="ProgressBar" parent="Root/Bars" unique_id=1868872316]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 7)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_hqnrr")
+theme_override_styles/fill = SubResource("StyleBoxFlat_bo48s")
+value = 100.0
+show_percentage = false
+
+[node name="@Label@3" type="Label" parent="Root/Bars" unique_id=1940237605]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.85, 0.82, 0.74, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+text = "STAMINA"
+
+[node name="StaminaBar" type="ProgressBar" parent="Root/Bars" unique_id=884861172]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 7)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_8qguk")
+theme_override_styles/fill = SubResource("StyleBoxFlat_136eg")
+value = 100.0
+show_percentage = false
+
+[node name="KillsLabel" type="Label" parent="Root/Bars" unique_id=917846571]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.85, 0.82, 0.74, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+text = "KILLS 0"
+
+[node name="FpsLabel" type="Label" parent="Root" unique_id=787781421]
+unique_name_in_owner = true
+layout_mode = 0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -60.0
+offset_top = 6.0
+offset_right = -8.0
+offset_bottom = 10.0
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.85, 0.82, 0.74, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+text = "FPS --"
+horizontal_alignment = 2
+
+[node name="DarkLabel" type="Label" parent="Root" unique_id=1494638068]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -90.0
+offset_top = 18.0
+offset_right = -8.0
+offset_bottom = 10.0
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.6, 0.7, 0.85, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+text = "IN DARKNESS"
+horizontal_alignment = 2
+
+[node name="WeaponBox" type="VBoxContainer" parent="Root" unique_id=1338636903]
+layout_mode = 0
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -130.0
+offset_top = -52.0
+offset_right = -8.0
+offset_bottom = -8.0
+theme_override_constants/separation = 1
+alignment = 2
+
+[node name="WeaponLabel" type="Label" parent="Root/WeaponBox" unique_id=631471240]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.85, 0.82, 0.74, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+text = "[1] WOODEN BAT"
+horizontal_alignment = 2
+
+[node name="AmmoLabel" type="Label" parent="Root/WeaponBox" unique_id=1228791949]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.85, 0.82, 0.74, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+text = "8 / 16"
+horizontal_alignment = 2
+
+[node name="ReloadBar" type="ProgressBar" parent="Root/WeaponBox" unique_id=1176369404]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(60, 3)
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_styles/background = SubResource("StyleBoxFlat_oj5la")
+theme_override_styles/fill = SubResource("StyleBoxFlat_gss2c")
+value = 100.0
+show_percentage = false
+
+[node name="PromptLabel" type="Label" parent="Root" unique_id=1832639888]
+unique_name_in_owner = true
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -64.0
+offset_right = 120.0
+offset_bottom = -48.0
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.95, 0.92, 0.8, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+text = "[E] Open door"
+horizontal_alignment = 1
+
+[node name="ToastLabel" type="Label" parent="Root" unique_id=746063115]
+unique_name_in_owner = true
+layout_mode = 0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 104.0
+offset_right = 200.0
+offset_bottom = 124.0
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.95, 0.88, 0.6, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+horizontal_alignment = 1
+
+[node name="ControlsHint" type="Label" parent="Root" unique_id=664031714]
+layout_mode = 0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -18.0
+offset_right = 420.0
+offset_bottom = -6.0
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.8, 0.78, 0.7, 0.75)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+text = "WASD move  Shift run  LMB attack  R reload  Space shove  E use  F light  Tab bag"

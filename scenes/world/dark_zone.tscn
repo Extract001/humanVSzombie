@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/dark_zone.gd" id="1_uxmki"]
+
+[node name="DarkZone" type="Node2D" unique_id=762773164]
+script = ExtResource("1_uxmki")
+
+[node name="Light" type="PointLight2D" parent="." unique_id=13287860]
+blend_mode = 1
+range_item_cull_mask = 2
+
+[node name="Area" type="Area2D" parent="." unique_id=857248503]
+collision_layer = 0
+collision_mask = 6
+monitorable = false
+
+[node name="Shape" type="CollisionShape2D" parent="Area" unique_id=1677946670]

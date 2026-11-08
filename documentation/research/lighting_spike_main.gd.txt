@@ -1,0 +1,119 @@
+extends Node2D
+# Spike: localized interior darkness in ONE continuous scene, Compatibility renderer.
+# Outdoor area must stay bright; warehouse interior dark; flashlight cuts through; zombie eyes stay readable.
+
+const INTERIOR := Rect2(330, 50, 280, 260)   # warehouse interior (world px)
+
+func _rect(r: Rect2, c: Color, parent: Node = self) -> Polygon2D:
+	var p := Polygon2D.new()
+	p.polygon = PackedVector2Array([r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y)])
+	p.color = c
+	parent.add_child(p)
+	return p
+
+func _wall(r: Rect2) -> void:
+	_rect(r, Color(0.35, 0.33, 0.3))
+	var occ := LightOccluder2D.new()
+	var poly := OccluderPolygon2D.new()
+	poly.polygon = PackedVector2Array([r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y)])
+	occ.occluder = poly
+	add_child(occ)
+
+func _actor(pos: Vector2, body: Color, eyes: bool) -> void:
+	_rect(Rect2(pos - Vector2(6, 8), Vector2(12, 16)), body)
+	if eyes:
+		var e := _rect(Rect2(pos + Vector2(-4, -5), Vector2(8, 2)), Color(0.9, 0.85, 0.4))
+		var m := CanvasItemMaterial.new()
+		m.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED   # always visible in the dark
+		e.material = m
+
+func _darkness_texture(size: Vector2i, feather: int) -> ImageTexture:
+	# White rectangle with soft edges = "how much darkness" mask for a SUBTRACT light.
+	var img := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
+	for y in size.y:
+		for x in size.x:
+			var d: int = mini(mini(x, size.x - 1 - x), mini(y, size.y - 1 - y))
+			var v: float = clampf(float(d) / feather, 0.0, 1.0)
+			img.set_pixel(x, y, Color(v, v, v, 1.0))
+	return ImageTexture.create_from_image(img)
+
+func _cone_texture(radius: int, half_angle_deg: float) -> ImageTexture:
+	var s := radius * 2
+	var img := Image.create(s, s, false, Image.FORMAT_RGBA8)
+	var c := Vector2(radius, radius)
+	for y in s:
+		for x in s:
+			var v := Vector2(x, y) - c
+			var a: float = absf(rad_to_deg(v.angle()))
+			var dist: float = v.length() / radius
+			var k: float = 0.0
+			if dist < 1.0 and a < half_angle_deg:
+				k = (1.0 - dist) * clampf((half_angle_deg - a) / 6.0, 0.0, 1.0)
+			img.set_pixel(x, y, Color(k, k, k, 1.0))
+	return ImageTexture.create_from_image(img)
+
+func _ready() -> void:
+	RenderingServer.set_default_clear_color(Color.BLACK)
+	_rect(Rect2(0, 0, 640, 360), Color(0.45, 0.47, 0.42))            # outdoor street
+	_rect(INTERIOR, Color(0.55, 0.45, 0.35))                          # warehouse floor
+	_wall(Rect2(322, 42, 296, 8)); _wall(Rect2(322, 310, 296, 8))     # top/bottom walls
+	_wall(Rect2(610, 42, 8, 276))                                     # right wall
+	_wall(Rect2(322, 42, 8, 110)); _wall(Rect2(322, 210, 8, 108))     # left wall with doorway
+	_wall(Rect2(470, 120, 16, 120))                                   # interior shelf (casts flashlight shadow)
+
+	_actor(Vector2(120, 180), Color(0.3, 0.5, 0.8), false)            # outdoor: survivor-coloured reference
+	_actor(Vector2(200, 120), Color(0.5, 0.6, 0.4), true)             # outdoor zombie
+	_actor(Vector2(560, 90), Color(0.5, 0.6, 0.4), true)              # interior zombie in darkness
+	_actor(Vector2(380, 180), Color(0.3, 0.5, 0.8), false)            # player inside
+
+	# Localized darkness: SUBTRACT light shaped like the interior, no shadows.
+	var dark := PointLight2D.new()
+	dark.name = "InteriorDarkness"
+	dark.texture = _darkness_texture(Vector2i(INTERIOR.size) + Vector2i(16, 16), 14)
+	dark.position = INTERIOR.get_center()
+	dark.blend_mode = Light2D.BLEND_MODE_SUB
+	dark.energy = 0.88
+	add_child(dark)
+
+	# Flashlight: ADD light cone from player, with shadows from occluders.
+	var fl := PointLight2D.new()
+	fl.name = "Flashlight"
+	fl.texture = _cone_texture(150, 28.0)
+	fl.position = Vector2(380, 180)
+	fl.rotation = deg_to_rad(-10)
+	fl.energy = 1.3
+	fl.shadow_enabled = true
+	fl.color = Color(1.0, 0.95, 0.8)
+	add_child(fl)
+
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	var img := get_viewport().get_texture().get_image()
+	img.save_png("res://spike_result.png")
+	var probes := {
+		"outdoor_street": Vector2i(60, 300),
+		"interior_dark_floor": Vector2i(560, 280),
+		"interior_flashlit_floor": Vector2i(440, 170),
+		"interior_shadow_behind_shelf": Vector2i(540, 160),
+		"interior_zombie_eyes": Vector2i(560, 86),
+		"doorway_outside_edge": Vector2i(300, 180),
+	}
+	for k in probes:
+		var c: Color = img.get_pixelv(probes[k])
+		print("PROBE %-30s luminance=%.3f" % [k, c.get_luminance()])
+	var L := func(k): return img.get_pixelv(probes[k]).get_luminance()
+	var checks := {
+		"outdoor stays bright (>0.40)": L.call("outdoor_street") > 0.40,
+		"outside doorway stays bright (>0.40)": L.call("doorway_outside_edge") > 0.40,
+		"interior is dark (<0.10)": L.call("interior_dark_floor") < 0.10,
+		"flashlight lights interior (>0.30)": L.call("interior_flashlit_floor") > 0.30,
+		"shelf blocks flashlight (<0.10)": L.call("interior_shadow_behind_shelf") < 0.10,
+		"zombie eyes readable in dark (>0.50)": L.call("interior_zombie_eyes") > 0.50,
+	}
+	var ok := true
+	for k in checks:
+		print(("PASS " if checks[k] else "FAIL ") + k)
+		ok = ok and checks[k]
+	print("SPIKE RESULT: " + ("ALL PASS" if ok else "FAILED"))
+	get_tree().quit()

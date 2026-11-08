@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="LootTableRegistry" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/loot_table_registry.gd" id="1_r"]
+[ext_resource type="Resource" path="res://data/loot_tables/grocery_shelf.tres" id="2_t"]
+[ext_resource type="Resource" path="res://data/loot_tables/kitchen.tres" id="3_t"]
+[ext_resource type="Resource" path="res://data/loot_tables/medical_counter.tres" id="4_t"]
+[ext_resource type="Resource" path="res://data/loot_tables/medical_cabinet.tres" id="5_t"]
+[ext_resource type="Resource" path="res://data/loot_tables/medical_shelf.tres" id="6_t"]
+[ext_resource type="Resource" path="res://data/loot_tables/storage_box.tres" id="7_t"]
+[ext_resource type="Resource" path="res://data/loot_tables/toolbox.tres" id="8_t"]
+[ext_resource type="Resource" path="res://data/loot_tables/locker.tres" id="9_t"]
+[ext_resource type="Resource" path="res://data/loot_tables/vehicle_trunk.tres" id="10_t"]
+[ext_resource type="Resource" path="res://data/loot_tables/backpack.tres" id="11_t"]
+[ext_resource type="Script" path="res://scripts/data/loot_table.gd" id="30_lt"]
+
+[resource]
+script = ExtResource("1_r")
+types = Array[StringName]([&"grocery_shelf", &"kitchen", &"medical_counter", &"medical_cabinet", &"medical_shelf", &"storage_box", &"toolbox", &"locker", &"vehicle_trunk", &"backpack"])
+tables = Array[ExtResource("30_lt")]([ExtResource("2_t"), ExtResource("3_t"), ExtResource("4_t"), ExtResource("5_t"), ExtResource("6_t"), ExtResource("7_t"), ExtResource("8_t"), ExtResource("9_t"), ExtResource("10_t"), ExtResource("11_t")])

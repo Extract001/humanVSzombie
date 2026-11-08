@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/safehouse_station.gd" id="1_cw3oc"]
+[ext_resource type="Texture2D" path="res://assets/sprites/safehouse.png" id="2_uusdr"]
+[ext_resource type="Script" path="res://scripts/components/interactable.gd" id="3_nsjji"]
+
+[node name="SafehouseStation" type="StaticBody2D" unique_id=544968661]
+script = ExtResource("1_cw3oc")
+
+[node name="Sprite" type="Sprite2D" parent="." unique_id=1973446581]
+texture = ExtResource("2_uusdr")
+hframes = 4
+
+[node name="Shape" type="CollisionShape2D" parent="." unique_id=292432905]
+
+[node name="Interact" type="Area2D" parent="." unique_id=1109974278]
+script = ExtResource("3_nsjji")
+
+[node name="Shape" type="CollisionShape2D" parent="Interact" unique_id=1916695985]

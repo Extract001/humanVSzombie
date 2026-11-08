@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"ammo_pistol"
+display_name = "Pistol rounds"
+description = "9 mm rounds for the pistol."
+category = 3
+max_stack = 48
+icon_frame = 4
+heal_amount = 0.0
+heal_duration = 0.0
+is_quest_item = false

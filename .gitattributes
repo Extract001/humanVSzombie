@@ -1,0 +1,10 @@
+# Normalize line endings (Godot uses LF)
+* text=auto eol=lf
+*.png binary
+*.ogg binary
+*.wav binary
+*.ttf binary
+*.otf binary
+
+# Windows batch files need CRLF line endings
+*.bat text eol=crlf

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ObjectiveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/objective_data.gd" id="1_obj"]
+
+[resource]
+script = ExtResource("1_obj")
+id = &"signal_parts"
+title = "Signal parts"
+description = "Get the radio component from the warehouse back office."
+type = 3
+items = {&"radio_part": 1}
+hint = "The warehouse is dark. Bring a light."

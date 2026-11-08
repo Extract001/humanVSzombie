@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/loot_container.gd" id="1_776ja"]
+[ext_resource type="Texture2D" path="res://assets/sprites/containers.png" id="2_ppcvu"]
+[ext_resource type="Script" path="res://scripts/components/interactable.gd" id="3_y3l63"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kig4b"]
+size = Vector2(18, 18)
+
+[node name="LootContainer" type="Node2D" unique_id=300465780]
+script = ExtResource("1_776ja")
+
+[node name="Sprite" type="Sprite2D" parent="." unique_id=430116897]
+texture = ExtResource("2_ppcvu")
+hframes = 8
+
+[node name="Interact" type="Area2D" parent="." unique_id=608500335]
+script = ExtResource("3_y3l63")
+
+[node name="Shape" type="CollisionShape2D" parent="Interact" unique_id=1358426770]
+shape = SubResource("RectangleShape2D_kig4b")

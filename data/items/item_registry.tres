@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemRegistry" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_registry.gd" id="1_reg"]
+[ext_resource type="Resource" path="res://data/items/food_can.tres" id="2_i"]
+[ext_resource type="Resource" path="res://data/items/water_bottle.tres" id="3_i"]
+[ext_resource type="Resource" path="res://data/items/bandage.tres" id="4_i"]
+[ext_resource type="Resource" path="res://data/items/medkit.tres" id="5_i"]
+[ext_resource type="Resource" path="res://data/items/ammo_pistol.tres" id="6_i"]
+[ext_resource type="Resource" path="res://data/items/ammo_shotgun.tres" id="7_i"]
+[ext_resource type="Resource" path="res://data/items/scrap.tres" id="8_i"]
+[ext_resource type="Resource" path="res://data/items/battery.tres" id="9_i"]
+[ext_resource type="Resource" path="res://data/items/bolt_cutters.tres" id="10_i"]
+[ext_resource type="Resource" path="res://data/items/radio_part.tres" id="11_i"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="20_idata"]
+
+[resource]
+script = ExtResource("1_reg")
+items = Array[ExtResource("20_idata")]([ExtResource("2_i"), ExtResource("3_i"), ExtResource("4_i"), ExtResource("5_i"), ExtResource("6_i"), ExtResource("7_i"), ExtResource("8_i"), ExtResource("9_i"), ExtResource("10_i"), ExtResource("11_i")])

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="QuestGuarantees" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_guarantees.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+guarantees = {
+"grocery_shelf_01": {"food_can": 2, "water_bottle": 1},
+"grocery_shelf_02": {"food_can": 2, "water_bottle": 1},
+"grocery_shelf_03": {"food_can": 1, "water_bottle": 1},
+"grocery_shelf_04": {"food_can": 1, "water_bottle": 1},
+"house_a_kitchen": {"food_can": 1},
+"house_b_kitchen": {"water_bottle": 1},
+"pharmacy_counter_01": {"bandage": 2},
+"pharmacy_cabinet_01": {"medkit": 1},
+"pharmacy_cabinet_02": {"bandage": 1},
+"vehicle_trunk_pickup_01": {"bolt_cutters": 1},
+"warehouse_office_locker": {"radio_part": 1}
+}

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ObjectiveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/objective_data.gd" id="1_obj"]
+
+[resource]
+script = ExtResource("1_obj")
+id = &"stock_up"
+title = "Stock up"
+description = "Bring 5 cans of food and 3 bottles of water back to the stash in the safehouse."
+type = 0
+items = {&"food_can": 5, &"water_bottle": 3}
+hint = "Grocery store (north across the street) and the house kitchens."

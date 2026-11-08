@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="PlayerStats" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/player_stats.gd" id="1_stats"]
+
+[resource]
+script = ExtResource("1_stats")
+max_health = 100.0
+respawn_health = 75.0
+walk_speed = 80.0
+run_speed = 140.0
+acceleration = 900.0
+friction = 1200.0
+max_stamina = 100.0
+run_drain_per_second = 20.0
+regen_per_second = 15.0
+regen_delay = 1.0
+min_stamina_to_run = 10.0
+shove_stamina_cost = 15.0
+shove_cooldown = 1.0
+shove_range = 36.0
+shove_arc_degrees = 120.0
+shove_knockback_speed = 220.0
+shove_knockback_time = 0.25
+shove_stagger_time = 0.6
+shove_damage = 2.0
+shove_noise_radius = 50.0
+shove_duration = 0.25
+heavy_hit_threshold = 25.0
+hurt_duration = 0.3
+reload_move_multiplier = 0.6
+shove_move_multiplier = 0.4
+hurt_move_multiplier = 0.3

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ObjectiveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/objective_data.gd" id="1_obj"]
+
+[resource]
+script = ExtResource("1_obj")
+id = &"last_signal"
+title = "Last signal"
+description = "Bring the radio component home and repair the radio on the desk."
+type = 2
+unlock_id = &"radio_repaired"
+hint = "Radio desk in the safehouse."

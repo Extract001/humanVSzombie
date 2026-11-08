@@ -1,0 +1,19 @@
+# Godot 4
+.godot/
+/android/
+*.translation
+
+# Exports & logs
+/export/
+/builds/
+/logs/
+*.tmp
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Python (asset generator scripts)
+__pycache__/
+*.pyc

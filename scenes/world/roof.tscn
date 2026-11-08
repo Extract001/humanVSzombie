@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/roof.gd" id="1_yf4f6"]
+[ext_resource type="Texture2D" path="res://assets/tiles/roof.png" id="2_thyvq"]
+
+[node name="Roof" type="Node2D" unique_id=2020643821]
+script = ExtResource("1_yf4f6")
+
+[node name="Sprite" type="Sprite2D" parent="." unique_id=306662849]
+texture = ExtResource("2_thyvq")
+
+[node name="Inside" type="Area2D" parent="." unique_id=1870272274]
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+
+[node name="Shape" type="CollisionShape2D" parent="Inside" unique_id=1892395121]

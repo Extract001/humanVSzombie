@@ -1,0 +1,14 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_fe2o3"]
+[ext_resource type="Script" path="res://scripts/ui/settings_menu.gd" id="2_1g8jr"]
+
+[node name="MainMenu" type="Control" unique_id=18308814]
+layout_mode = 3
+anchors_preset = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_fe2o3")
+
+[node name="SettingsMenu" type="CanvasLayer" parent="." unique_id=211827058]
+script = ExtResource("2_1g8jr")

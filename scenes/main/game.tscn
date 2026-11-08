@@ -1,0 +1,159 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/main/game.gd" id="1_cgagh"]
+[ext_resource type="PackedScene" path="res://scenes/world/ashford_lane.tscn" id="2_c8nfc"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3_oxcik"]
+[ext_resource type="PackedScene" path="res://scenes/zombies/walker.tscn" id="4_obhq2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5_oxav3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/game_over.tscn" id="6_6lv7u"]
+[ext_resource type="Script" path="res://scripts/ui/loot_panel.gd" id="7_8k4wh"]
+[ext_resource type="Script" path="res://scripts/ui/inventory_panel.gd" id="8_mg4hm"]
+[ext_resource type="Script" path="res://scripts/ui/stash_panel.gd" id="9_4b4yl"]
+[ext_resource type="Script" path="res://scripts/ui/objectives_panel.gd" id="10_fyutr"]
+[ext_resource type="Script" path="res://scripts/ui/ending_panel.gd" id="11_d8gmq"]
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="12_0u50o"]
+[ext_resource type="Script" path="res://scripts/ui/settings_menu.gd" id="13_swbjq"]
+[ext_resource type="Script" path="res://scripts/main/objective_tracker.gd" id="14_uuwcm"]
+[ext_resource type="Script" path="res://scripts/ui/crosshair.gd" id="15_g8xql"]
+
+[node name="Game" type="Node2D" unique_id=1099622275]
+script = ExtResource("1_cgagh")
+
+[node name="World" type="Node2D" parent="." unique_id=2051993624]
+
+[node name="Map" parent="World" unique_id=1388632461 instance=ExtResource("2_c8nfc")]
+
+[node name="Actors" type="Node2D" parent="World" unique_id=927219576]
+y_sort_enabled = true
+
+[node name="Player" parent="World/Actors" unique_id=1378842805 instance=ExtResource("3_oxcik")]
+
+[node name="Walker1" parent="World/Actors" unique_id=1510067358 instance=ExtResource("4_obhq2")]
+position = Vector2(648, 936)
+initial_facing = Vector2(1, 0)
+
+[node name="Walker2" parent="World/Actors" unique_id=1707002218 instance=ExtResource("4_obhq2")]
+position = Vector2(1528, 952)
+initial_facing = Vector2(-1, 0)
+
+[node name="Walker3" parent="World/Actors" unique_id=6137235 instance=ExtResource("4_obhq2")]
+position = Vector2(2120, 920)
+initial_facing = Vector2(-1, 0)
+
+[node name="Walker4" parent="World/Actors" unique_id=2017502668 instance=ExtResource("4_obhq2")]
+position = Vector2(888, 696)
+
+[node name="Walker5" parent="World/Actors" unique_id=589851127 instance=ExtResource("4_obhq2")]
+position = Vector2(1192, 632)
+initial_facing = Vector2(-1, 0)
+
+[node name="Walker6" parent="World/Actors" unique_id=1031629433 instance=ExtResource("4_obhq2")]
+position = Vector2(1032, 760)
+initial_facing = Vector2(0, -1)
+
+[node name="Walker7" parent="World/Actors" unique_id=1463194709 instance=ExtResource("4_obhq2")]
+position = Vector2(216, 840)
+initial_facing = Vector2(1, 0)
+
+[node name="Walker8" parent="World/Actors" unique_id=1420977534 instance=ExtResource("4_obhq2")]
+position = Vector2(312, 856)
+initial_facing = Vector2(0, -1)
+
+[node name="Walker9" parent="World/Actors" unique_id=1240327186 instance=ExtResource("4_obhq2")]
+position = Vector2(392, 824)
+initial_facing = Vector2(-1, 0)
+
+[node name="Walker10" parent="World/Actors" unique_id=1495960981 instance=ExtResource("4_obhq2")]
+position = Vector2(200, 680)
+initial_facing = Vector2(1, 0)
+
+[node name="Walker11" parent="World/Actors" unique_id=430633206 instance=ExtResource("4_obhq2")]
+position = Vector2(264, 568)
+
+[node name="Walker12" parent="World/Actors" unique_id=346894262 instance=ExtResource("4_obhq2")]
+position = Vector2(968, 488)
+initial_facing = Vector2(-1, 0)
+
+[node name="Walker13" parent="World/Actors" unique_id=417247651 instance=ExtResource("4_obhq2")]
+position = Vector2(1416, 488)
+initial_facing = Vector2(1, 0)
+
+[node name="Walker14" parent="World/Actors" unique_id=834166208 instance=ExtResource("4_obhq2")]
+position = Vector2(728, 392)
+initial_facing = Vector2(1, 0)
+
+[node name="Walker15" parent="World/Actors" unique_id=949840313 instance=ExtResource("4_obhq2")]
+position = Vector2(1128, 408)
+initial_facing = Vector2(-1, 0)
+
+[node name="Walker16" parent="World/Actors" unique_id=2041035672 instance=ExtResource("4_obhq2")]
+position = Vector2(1768, 392)
+initial_facing = Vector2(-1, 0)
+
+[node name="Walker17" parent="World/Actors" unique_id=243224846 instance=ExtResource("4_obhq2")]
+position = Vector2(2344, 408)
+initial_facing = Vector2(-1, 0)
+
+[node name="Walker18" parent="World/Actors" unique_id=1425647717 instance=ExtResource("4_obhq2")]
+position = Vector2(1608, 728)
+initial_facing = Vector2(0, -1)
+
+[node name="Walker19" parent="World/Actors" unique_id=730308219 instance=ExtResource("4_obhq2")]
+position = Vector2(2248, 648)
+
+[node name="Walker20" parent="World/Actors" unique_id=1647439311 instance=ExtResource("4_obhq2")]
+position = Vector2(1960, 1144)
+initial_facing = Vector2(-1, 0)
+
+[node name="Walker21" parent="World/Actors" unique_id=1868314702 instance=ExtResource("4_obhq2")]
+position = Vector2(248, 136)
+initial_facing = Vector2(1, 0)
+
+[node name="Walker22" parent="World/Actors" unique_id=402116628 instance=ExtResource("4_obhq2")]
+position = Vector2(488, 232)
+initial_facing = Vector2(0, -1)
+
+[node name="Walker23" parent="World/Actors" unique_id=1481556150 instance=ExtResource("4_obhq2")]
+position = Vector2(680, 216)
+initial_facing = Vector2(-1, 0)
+
+[node name="HUD" parent="." unique_id=91758626 instance=ExtResource("5_oxav3")]
+
+[node name="GameOver" parent="." unique_id=1998417359 instance=ExtResource("6_6lv7u")]
+
+[node name="LootPanel" type="CanvasLayer" parent="." unique_id=17648243]
+layer = 12
+script = ExtResource("7_8k4wh")
+
+[node name="InventoryPanel" type="CanvasLayer" parent="." unique_id=424985604]
+layer = 12
+script = ExtResource("8_mg4hm")
+
+[node name="StashPanel" type="CanvasLayer" parent="." unique_id=1339381070]
+layer = 12
+script = ExtResource("9_4b4yl")
+
+[node name="ObjectivesPanel" type="CanvasLayer" parent="." unique_id=1875825396]
+layer = 12
+script = ExtResource("10_fyutr")
+
+[node name="EndingPanel" type="CanvasLayer" parent="." unique_id=686264122]
+layer = 12
+script = ExtResource("11_d8gmq")
+
+[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=765427892]
+layer = 12
+script = ExtResource("12_0u50o")
+
+[node name="SettingsMenu" type="CanvasLayer" parent="." unique_id=767267064]
+layer = 12
+script = ExtResource("13_swbjq")
+
+[node name="Objectives" type="Node" parent="." unique_id=1328427530]
+script = ExtResource("14_uuwcm")
+
+[node name="Crosshair" type="CanvasLayer" parent="." unique_id=2055035611]
+layer = 15
+
+[node name="Cursor" type="Node2D" parent="Crosshair" unique_id=1641017655]
+script = ExtResource("15_g8xql")

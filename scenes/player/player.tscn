@@ -1,0 +1,131 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="1_fm80t"]
+[ext_resource type="Resource" path="res://data/player/player_stats.tres" id="2_gx1jg"]
+[ext_resource type="SpriteFrames" path="res://assets/sprites/player_frames.tres" id="3_ugbui"]
+[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="4_fcs02"]
+[ext_resource type="Script" path="res://scripts/components/hurtbox.gd" id="5_myrg7"]
+[ext_resource type="Texture2D" path="res://assets/sprites/flashlight_cone.png" id="6_kvlxm"]
+[ext_resource type="Script" path="res://scripts/inventory/inventory.gd" id="7_uf5tr"]
+[ext_resource type="Script" path="res://scripts/weapons/weapon_holder.gd" id="8_lgqa7"]
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="9_8ydkj"]
+[ext_resource type="Resource" path="res://data/weapons/bat.tres" id="10_3j4b4"]
+[ext_resource type="Resource" path="res://data/weapons/pistol.tres" id="11_yj68g"]
+[ext_resource type="Texture2D" path="res://assets/sprites/muzzle_flash.png" id="12_ioxgp"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_cnsyf"]
+radius = 5.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_007i1"]
+radius = 6.0
+
+[sub_resource type="Gradient" id="Gradient_6cv16"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_j4nxn"]
+gradient = SubResource("Gradient_6cv16")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_28m0y"]
+light_mode = 1
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_uniwh"]
+radius = 20.0
+
+[node name="Player" type="CharacterBody2D" unique_id=121078278]
+collision_layer = 2
+collision_mask = 5
+motion_mode = 1
+script = ExtResource("1_fm80t")
+stats = ExtResource("2_gx1jg")
+
+[node name="Shape" type="CollisionShape2D" parent="." unique_id=732904180]
+shape = SubResource("CircleShape2D_cnsyf")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="." unique_id=2114682615]
+light_mask = 3
+sprite_frames = ExtResource("3_ugbui")
+animation = &"idle_down"
+offset = Vector2(0, -9)
+
+[node name="Health" type="Node" parent="." unique_id=1691721593]
+script = ExtResource("4_fcs02")
+
+[node name="Hurtbox" type="Area2D" parent="." unique_id=1960240751 node_paths=PackedStringArray("health")]
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+script = ExtResource("5_myrg7")
+health = NodePath("../Health")
+
+[node name="Shape" type="CollisionShape2D" parent="Hurtbox" unique_id=1709723193]
+position = Vector2(0, -6)
+shape = SubResource("CircleShape2D_007i1")
+
+[node name="Camera" type="Camera2D" parent="." unique_id=1057336137]
+position_smoothing_enabled = true
+position_smoothing_speed = 7.0
+
+[node name="AdaptationLight" type="PointLight2D" parent="." unique_id=407205049]
+position = Vector2(0, -6)
+enabled = false
+energy = 0.3
+range_item_cull_mask = 2
+texture = SubResource("GradientTexture2D_j4nxn")
+
+[node name="Flashlight" type="PointLight2D" parent="." unique_id=243124742]
+position = Vector2(0, -7)
+enabled = false
+color = Color(1, 0.95, 0.8, 1)
+energy = 1.1
+range_item_cull_mask = 3
+shadow_enabled = true
+shadow_color = Color(0, 0, 0, 1)
+texture = ExtResource("6_kvlxm")
+texture_scale = 1.2
+
+[node name="Inventory" type="Node" parent="." unique_id=1547775613]
+script = ExtResource("7_uf5tr")
+starting_items = {
+&"ammo_pistol": 16,
+&"bandage": 2
+}
+
+[node name="Weapons" type="Node" parent="." unique_id=1896119855]
+script = ExtResource("8_lgqa7")
+starting_weapons = Array[ExtResource("9_8ydkj")]([ExtResource("10_3j4b4"), ExtResource("11_yj68g")])
+starting_rounds = Array[int]([0, 8])
+
+[node name="WeaponPivot" type="Node2D" parent="." unique_id=37838495]
+position = Vector2(0, -7)
+
+[node name="WeaponSprite" type="Sprite2D" parent="WeaponPivot" unique_id=1420563423]
+light_mask = 3
+offset = Vector2(9, 0)
+
+[node name="MuzzleLight" type="PointLight2D" parent="WeaponPivot" unique_id=1904614575]
+position = Vector2(16, 0)
+enabled = false
+color = Color(1, 0.85, 0.55, 1)
+energy = 1.4
+range_item_cull_mask = 3
+texture = SubResource("GradientTexture2D_j4nxn")
+texture_scale = 2.0
+
+[node name="MuzzleFlash" type="Sprite2D" parent="WeaponPivot" unique_id=1654723886]
+visible = false
+material = SubResource("CanvasItemMaterial_28m0y")
+position = Vector2(19, 0)
+texture = ExtResource("12_ioxgp")
+hframes = 2
+
+[node name="Interactor" type="Area2D" parent="." unique_id=1448252969]
+collision_layer = 0
+collision_mask = 16
+monitorable = false
+
+[node name="Shape" type="CollisionShape2D" parent="Interactor" unique_id=1486618354]
+position = Vector2(0, -4)
+shape = SubResource("CircleShape2D_uniwh")

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ObjectiveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/objective_data.gd" id="1_obj"]
+
+[resource]
+script = ExtResource("1_obj")
+id = &"first_aid"
+title = "First aid"
+description = "Find 2 medical items in the pharmacy."
+type = 1
+item_ids = Array[StringName]([&"bandage", &"medkit"])
+amount = 2
+container_prefix = "pharmacy_"
+hint = "Pharmacy: west along the residential street, then north. A group of them hangs around the front."

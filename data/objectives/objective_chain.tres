@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ObjectiveChain" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/objective_chain.gd" id="1_chain"]
+[ext_resource type="Script" path="res://scripts/data/objective_data.gd" id="7_s"]
+[ext_resource type="Resource" path="res://data/objectives/01_stock_up.tres" id="2_o"]
+[ext_resource type="Resource" path="res://data/objectives/02_first_aid.tres" id="3_o"]
+[ext_resource type="Resource" path="res://data/objectives/03_cut_the_lock.tres" id="4_o"]
+[ext_resource type="Resource" path="res://data/objectives/04_signal_parts.tres" id="5_o"]
+[ext_resource type="Resource" path="res://data/objectives/05_last_signal.tres" id="6_o"]
+
+[resource]
+script = ExtResource("1_chain")
+objectives = Array[ExtResource("7_s")]([ExtResource("2_o"), ExtResource("3_o"), ExtResource("4_o"), ExtResource("5_o"), ExtResource("6_o")])

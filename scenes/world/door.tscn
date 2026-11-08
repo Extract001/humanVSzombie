@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/door.gd" id="1_kkvvt"]
+[ext_resource type="Script" path="res://scripts/components/interactable.gd" id="2_eej0e"]
+
+[node name="Door" type="StaticBody2D" unique_id=1066975353]
+script = ExtResource("1_kkvvt")
+
+[node name="Shape" type="CollisionShape2D" parent="." unique_id=1313734132]
+
+[node name="Closed" type="Polygon2D" parent="." unique_id=1639848155]
+light_mask = 3
+
+[node name="Open" type="Polygon2D" parent="." unique_id=739074302]
+light_mask = 3
+
+[node name="Occluder" type="LightOccluder2D" parent="." unique_id=1158644998]
+
+[node name="Interact" type="Area2D" parent="." unique_id=1146745506]
+script = ExtResource("2_eej0e")
+
+[node name="Shape" type="CollisionShape2D" parent="Interact" unique_id=578143701]

@@ -1,0 +1,25 @@
+[remap]
+
+importer="font_data_image"
+type="FontFile"
+uid="uid://c3lrgneu3yjpa"
+path="res://.godot/imported/last_signal_pixel.png-452226cb4c2c81683df2c683ca74accc.fontdata"
+
+[deps]
+
+source_file="res://assets/fonts/last_signal_pixel.png"
+dest_files=["res://.godot/imported/last_signal_pixel.png-452226cb4c2c81683df2c683ca74accc.fontdata"]
+
+[params]
+
+character_ranges=PackedStringArray("32-126", "183", "215", "8226", "8212", "8230", "9654", "10003", "10007")
+kerning_pairs=PackedStringArray()
+columns=16
+rows=7
+image_margin=Rect2i(0, 0, 0, 0)
+character_margin=Rect2i(0, 0, 0, 0)
+ascent=8
+descent=2
+fallbacks=[]
+compress=false
+scaling_mode=2

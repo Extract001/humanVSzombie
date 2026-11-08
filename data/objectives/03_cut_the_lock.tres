@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ObjectiveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/objective_data.gd" id="1_obj"]
+
+[resource]
+script = ExtResource("1_obj")
+id = &"cut_the_lock"
+title = "Cut the lock"
+description = "Find bolt cutters and cut the chain on the warehouse gate."
+type = 2
+unlock_id = &"warehouse_gate"
+hint = "An abandoned pickup truck on the main street. The gate is in the north fence."

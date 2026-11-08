@@ -211,3 +211,32 @@ func test_screen_fit_fills_common_sizes() -> void:
 	check(v.x * 2 >= 1366 and v.y * 2 >= 768, "the picture covers the whole window")
 	check_eq(ProjectSettings.get_setting("display/window/stretch/aspect"), "expand", "no black bars for other shapes")
 	check(Settings.fullscreen or OS.has_feature("web"), "desktop starts in fullscreen")
+
+
+## The top-right HUD labels (FPS, SCORE, IN DARKNESS) never sit on top of each other.
+func test_top_right_hud_labels_do_not_overlap() -> void:
+	GameState.new_game(1)
+	var game: Node = load("res://scenes/main/game.tscn").instantiate()
+	add_child(game)
+	await physics_frames(3)
+	var hud: Node = game.hud
+	var keep: bool = Settings.show_fps
+	for fps_on in [true, false]:
+		Settings.show_fps = fps_on
+		Settings.apply()
+		game.player.global_position = Vector2(21.5, 8.5) * 16.0   # dark warehouse: "IN DARKNESS" shows
+		await physics_frames(14)
+		var rects: Array = []
+		for l in [hud.fps_label, hud.score_label, hud.dark_label]:
+			if l.visible:
+				rects.append(Rect2(l.global_position, l.size).grow(-0.5))
+		var overlap := false
+		for i in rects.size():
+			for j in range(i + 1, rects.size()):
+				if rects[i].intersects(rects[j]):
+					overlap = true
+		check(hud.dark_label.visible, "IN DARKNESS is showing")
+		check(not overlap, "no overlap (FPS counter %s)" % ("on" if fps_on else "off"))
+	Settings.show_fps = keep
+	Settings.apply()
+	game.queue_free()

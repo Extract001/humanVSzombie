@@ -106,8 +106,8 @@ func _build_fun_widgets() -> void:
 	score_label.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	score_label.offset_left = -160
 	score_label.offset_right = -8
-	score_label.offset_top = 16
-	score_label.offset_bottom = 26
+	score_label.offset_top = 18
+	score_label.offset_bottom = 28
 	root.add_child(score_label)
 	streak_label = UiKit.label("", 20, Color(1, 0.55, 0.3))
 	streak_label.name = "StreakLabel"
@@ -133,6 +133,19 @@ func _build_fun_widgets() -> void:
 
 func _on_score_changed(s: int) -> void:
 	score_label.text = "SCORE %d" % s
+
+
+## Top-right column, one line each, no overlaps: FPS (if shown) → SCORE → IN DARKNESS.
+const TOP_RIGHT_LINE: float = 12.0
+
+func _layout_top_right() -> void:
+	var y: float = 6.0
+	for l in [fps_label, score_label, dark_label]:
+		if l == null or not l.visible:
+			continue
+		l.offset_top = y
+		l.offset_bottom = y + 10.0
+		y += TOP_RIGHT_LINE
 
 
 ## Fun pass: the goal arrow needs the game (objectives, safehouse, phase).
@@ -363,6 +376,7 @@ func set_kills(kills: int) -> void:
 func _process(delta: float) -> void:
 	if _cycle != null and Engine.get_process_frames() % 10 == 0:
 		_update_cycle_labels()
+		_layout_top_right()
 	# Low health: heartbeat, and the screen edge stays faintly red.
 	if _player != null and not _player.is_dead() and _player.health.current_health <= _player.health.max_health * 0.3:
 		_heartbeat_left -= delta

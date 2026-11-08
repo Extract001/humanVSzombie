@@ -18,9 +18,11 @@ signal dawn(summary: Dictionary)
 const WALKER: PackedScene = preload("res://scenes/zombies/walker.tscn")
 ## Horde Walkers never appear closer than this to the player (they walk in from the edges).
 const MIN_SPAWN_DISTANCE: float = 360.0
-## Fun pass: a quarter of the night horde are fast Lurchers.
+## Fun pass: a quarter of the night horde are fast Lurchers; later nights introduce Brutes.
 const LURCHER: ZombieData = preload("res://data/zombies/lurcher.tres")
+const BRUTE: ZombieData = preload("res://data/zombies/brute.tres")
 const LURCHER_SHARE: float = 0.25
+const BRUTE_SHARE: float = 0.15
 
 var data: SiegeData = preload("res://data/siege/siege_data.tres")
 var game: Node
@@ -218,7 +220,10 @@ func _spawn_horde_walker() -> void:
 		return
 	var at: Vector2 = (spawns[randi() % spawns.size()] as Node2D).global_position + Vector2(randf_range(-12, 12), randf_range(-12, 12))
 	var z: Zombie = WALKER.instantiate()
-	if randf() < LURCHER_SHARE:
+	var roll: float = randf()
+	if GameState.nights_survived >= 1 and roll < BRUTE_SHARE:
+		z.data = BRUTE
+	elif roll < LURCHER_SHARE:
 		z.data = LURCHER
 	z.position = at
 	z.siege_goal = _pick_window_goal(at)

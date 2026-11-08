@@ -42,6 +42,31 @@ var _pending_dir: Vector2
 var _rng := RandomNumberGenerator.new()
 
 
+func has_weapon(weapon_id: StringName) -> bool:
+	for w in slots:
+		if w != null and w.id == weapon_id:
+			return true
+	return false
+
+
+func add_weapon(weapon: WeaponData, loaded: int = -1) -> bool:
+	if weapon == null or has_weapon(weapon.id):
+		return false
+	slots.append(weapon)
+	var mag: int = effective_magazine_size(weapon)
+	var count: int = loaded if loaded >= 0 else mag
+	rounds_in_mag.append(clampi(count, 0, mag))
+	return true
+
+
+func effective_magazine_size(w: WeaponData) -> int:
+	if w == null:
+		return 0
+	if w.id == &"pistol" and GameState.has_upgrade(&"ext_mag"):
+		return 12
+	return w.magazine_size
+
+
 func setup(owner_body: Node2D, owner_inventory: Inventory) -> void:
 	body = owner_body
 	inventory = owner_inventory
@@ -50,8 +75,9 @@ func setup(owner_body: Node2D, owner_inventory: Inventory) -> void:
 	for i in starting_weapons.size():
 		var w: WeaponData = starting_weapons[i]
 		slots.append(w)
-		var loaded: int = starting_rounds[i] if i < starting_rounds.size() else w.magazine_size
-		rounds_in_mag.append(clampi(loaded, 0, w.magazine_size))
+		var mag: int = effective_magazine_size(w)
+		var loaded: int = starting_rounds[i] if i < starting_rounds.size() else mag
+		rounds_in_mag.append(clampi(loaded, 0, mag))
 	inventory.item_changed.connect(func(_id: StringName, _q: int) -> void: _emit_ammo())
 	current = 0
 	weapon_changed.emit(current, current_weapon())
@@ -122,7 +148,7 @@ func start_reload() -> bool:
 	var w: WeaponData = current_weapon()
 	if w == null or not w.uses_ammo() or is_reloading:
 		return false
-	if loaded_rounds() >= w.magazine_size or reserve_for(w) <= 0:
+	if loaded_rounds() >= effective_magazine_size(w) or reserve_for(w) <= 0:
 		return false
 	is_reloading = true
 	_reload_left = w.reload_time
@@ -183,7 +209,7 @@ func tick(delta: float) -> void:
 func _complete_reload() -> void:
 	var w: WeaponData = current_weapon()
 	is_reloading = false
-	var needed: int = w.magazine_size - loaded_rounds()
+	var needed: int = effective_magazine_size(w) - loaded_rounds()
 	var taken: int = inventory.remove_item(w.ammo_item_id, needed)
 	rounds_in_mag[current] += taken
 	AudioManager.play_at(preload("res://assets/audio/sfx/reload.wav"), body.global_position, -4.0)

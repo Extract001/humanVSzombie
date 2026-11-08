@@ -114,6 +114,11 @@ func _ready() -> void:
 	sprite.play(&"idle_down")
 	flashlight.enabled = false
 	sprite.frame_changed.connect(_on_sprite_frame_changed)
+	camera.zoom = Vector2(1.25, 1.25)
+	if GameState.has_unlock(&"weapon_shotgun"):
+		unlock_shotgun(false)
+	_apply_upgrades()
+	GameState.upgrades_changed.connect(_apply_upgrades)
 	_apply_graphics_settings()
 	Settings.changed.connect(_apply_graphics_settings)
 
@@ -150,6 +155,14 @@ func _physics_process(delta: float) -> void:
 	_update_interactable()
 	_update_search(delta, input != Vector2.ZERO)
 	_update_work(delta, input != Vector2.ZERO)
+
+	# Tactical aim look-ahead (aim peek)
+	var target_cam_offset: Vector2 = aim_direction * 28.0
+	camera.offset = camera.offset.move_toward(target_cam_offset, 90.0 * delta)
+
+	# Running footstep dust
+	if is_running and input != Vector2.ZERO and randf() < 0.12:
+		Fx.burst(get_parent(), global_position, Fx.DUST, 2, 25.0, -input, 0.2)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -400,6 +413,24 @@ func snap_to_navigation(pos: Vector2) -> Vector2:
 	return NavigationServer2D.map_get_closest_point(map, pos)
 
 
+func unlock_shotgun(notify: bool = true) -> void:
+	if weapons.has_weapon(&"shotgun"):
+		return
+	var sg: WeaponData = load("res://data/weapons/shotgun.tres")
+	weapons.add_weapon(sg, sg.magazine_size)
+	GameState.add_unlock(&"weapon_shotgun")
+	if notify:
+		message.emit("Found Shotgun! Press [3] to equip.")
+		AudioManager.play_at(preload("res://assets/audio/sfx/reload.wav"), global_position)
+
+
+func _apply_upgrades() -> void:
+	if GameState.has_upgrade(&"cardio"):
+		stamina = minf(stamina, 130.0)
+	if GameState.has_upgrade(&"thick_skin"):
+		health.max_health = 130.0
+
+
 ## Save data (Phase 10). Equipment = weapons with their loaded rounds; the flashlight's battery is in GameState.
 func to_save_dict() -> Dictionary:
 	return {
@@ -409,15 +440,18 @@ func to_save_dict() -> Dictionary:
 		"inventory": inventory.to_array(),
 		"rounds_in_mag": weapons.rounds_in_mag.duplicate(),
 		"weapon": weapons.current,
+		"has_shotgun": weapons.has_weapon(&"shotgun"),
 	}
 
 
 ## Restores saved player data. A player saved dead (death autosave) wakes up at `respawn_at`.
 func apply_save_dict(d: Dictionary, respawn_at: Vector2) -> void:
 	inventory.from_array(d.get("inventory", []))
+	if bool(d.get("has_shotgun", false)) or GameState.has_unlock(&"weapon_shotgun"):
+		unlock_shotgun(false)
 	var mags: Array = d.get("rounds_in_mag", [])
 	for i in mini(mags.size(), weapons.rounds_in_mag.size()):
-		weapons.rounds_in_mag[i] = clampi(int(mags[i]), 0, weapons.slots[i].magazine_size)
+		weapons.rounds_in_mag[i] = clampi(int(mags[i]), 0, weapons.effective_magazine_size(weapons.slots[i]))
 	var slot: int = int(d.get("weapon", 0))
 	if slot != weapons.current and slot >= 0 and slot < weapons.slots.size():
 		weapons.switch_to(slot)
@@ -497,6 +531,9 @@ func update_stamina(delta: float, wants_run: bool, is_moving: bool) -> void:
 	is_running = wants_run and is_moving and state == State.NORMAL \
 		and (can_keep_running or can_start_running)
 
+	var max_stam: float = 130.0 if GameState.has_upgrade(&"cardio") else stats.max_stamina
+	var regen_rate: float = stats.regen_per_second * (1.25 if GameState.has_upgrade(&"cardio") else 1.0)
+
 	if is_running:
 		stamina = maxf(0.0, stamina - stats.run_drain_per_second * delta)
 		_regen_delay_left = stats.regen_delay
@@ -505,10 +542,10 @@ func update_stamina(delta: float, wants_run: bool, is_moving: bool) -> void:
 	elif _regen_delay_left > 0.0:
 		_regen_delay_left = maxf(0.0, _regen_delay_left - delta)
 	else:
-		stamina = minf(stats.max_stamina, stamina + stats.regen_per_second * delta)
+		stamina = minf(max_stam, stamina + regen_rate * delta)
 
 	if not is_equal_approx(before, stamina):
-		stamina_changed.emit(stamina, stats.max_stamina)
+		stamina_changed.emit(stamina, max_stam)
 
 
 ## For actions that cost stamina (shove). Returns false if not enough.
@@ -589,7 +626,8 @@ func _update_flashlight(delta: float) -> void:
 	if not flashlight_on:
 		return
 	_aim_flashlight()
-	GameState.flashlight_charge = maxf(0.0, flashlight_charge() - delta)
+	var drain_mult: float = 0.5 if GameState.has_upgrade(&"tactical_light") else 1.0
+	GameState.flashlight_charge = maxf(0.0, flashlight_charge() - delta * drain_mult)
 	if GameState.flashlight_charge <= 0.0 and not _swap_battery():
 		message.emit("Flashlight battery is dead")
 		set_flashlight(false)
@@ -740,6 +778,8 @@ static func _direction_name(dir: Vector2) -> String:
 
 
 func _on_damaged(amount: float, _source: Node) -> void:
+	if GameState.has_upgrade(&"thick_skin"):
+		amount *= 0.8
 	AudioManager.play_at(preload("res://assets/audio/sfx/player_hurt.wav"), global_position, -2.0)
 	Fx.burst(get_parent(), global_position + Vector2(0, -9), Fx.BLOOD, 6, 45.0)
 	cancel_search()

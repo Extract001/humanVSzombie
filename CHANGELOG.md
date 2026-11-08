@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+### Visuals, Variety, Progression & Narrative Hook (2026-11-09) — IMPLEMENTED + TESTED (automated); not yet VERIFIED
+Major expansion addressing visual presentation, content variety, progression, and opening hook:
+- **Visuals & Camera Presence:**
+  - Camera zoom increased to 1.25×: characters and zombies are 25% larger on screen, immediately showing clothes, weapon models, walk cycles, and glowing eyes.
+  - Tactical Aim Peek: smooth look-ahead camera glide (28 px) toward your mouse cursor gives tactical vision down dark hallways and street corners.
+  - Atmospheric Street Particles: ambient dust and leaves drift through Ashford Lane's streets, bringing the abandoned town to life.
+  - Running footstep dust: subtle dust puffs appear behind the survivor when sprinting.
+- **Weapon Variety — The Pump Shotgun:**
+  - New 3rd weapon: Pump Shotgun (`data/weapons/shotgun.tres`) with dedicated original sprite and heavy synthesized blast sound (`assets/audio/sfx/shotgun_shot.wav`).
+  - Fires 6 high-spread pellets (18 damage each, up to 108 damage point-blank) with heavy 240 px knockback. Holds 4 shells.
+  - Discovered in the locked Warehouse Office Locker alongside 8 shotgun shells (`ammo_shotgun`). Equipped instantly with Key [3] or scroll wheel.
+- **Enemy Variety — The Brute:**
+  - New heavy zombie type (`data/zombies/brute.tres`): 180 HP, 1.25× scaled body, bruised slate tint, 22 bite damage, and 0.75 shove resistance.
+  - Spawns in night hordes starting on Night 2, and stalks the town streets during daytime scavenges.
+- **Progression & Safehouse Workbench:**
+  - New Workbench Upgrades menu (press **U**, or access via Safehouse Objective Board or the morning Dawn summary).
+  - Spend scavenged **Scrap Metal** on permanent survivor upgrades:
+    1. Extended Magazine (4 Scrap): Pistol holds 12 rounds (+4 capacity).
+    2. Cardio Conditioning (3 Scrap): +30 Max Stamina (130) and 25% faster stamina recovery.
+    3. Reinforced Jacket (5 Scrap): +30 Max Health (130 HP) and 20% reduced damage taken.
+    4. Spiked Planks (4 Scrap): Window barricades reflect 15 damage back to attacking zombies.
+    5. LED Mod (2 Scrap): Flashlight battery drains 50% slower (2× battery life).
+  - Upgrades are saved and restored across sessions (`GameState.upgrades`).
+- **First-Minute Narrative Hook & World Lore:**
+  - New Game starts with an emergency radio transmission from sector command with ambient audio: establishes the collapse of Ashford Sector, the 10-day countdown to military convoy extraction, and instructions to fortify the safehouse before nightfall.
+  - Environmental storytelling notes added to key locations (Safehouse window defense note, Warehouse armory gate warning, Pharmacy triage bulletin).
+- **Tests:** 5 new automated tests in `tests/test_variety_progression.gd` covering shotgun mechanics, brute stats, workbench upgrades, and opening transmission flow.
+
 ### Full-screen & responsive display (2026-11-09) — IMPLEMENTED + TESTED (automated); not yet VERIFIED
 You said the game didn't fill your laptop screen.
 - **Starts in fullscreen** on Windows (once also for your existing settings; after that Settings → Fullscreen is remembered). Browsers still need a click (browser rule).

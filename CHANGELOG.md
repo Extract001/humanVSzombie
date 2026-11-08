@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Full-screen & responsive display (2026-11-09) — IMPLEMENTED + TESTED (automated); not yet VERIFIED
+You said the game didn't fill your laptop screen.
+- **Starts in fullscreen** on Windows (once also for your existing settings; after that Settings → Fullscreen is remembered). Browsers still need a click (browser rule).
+- **No black bars on any screen shape:** the game picks the largest whole-number zoom that fits (2× on 1366×768, 3× on 1920×1080, 4× on 2560×1440) and shows a little more of the world to fill the rest, so pixels stay sharp and square. 16:10, ultrawide and resized windows fill too; very unusual sizes (e.g. 1024×768) use smooth scaling instead. Resizing the window or browser updates it at once.
+- Zombies still never pop up on screen on wide displays (spawn distances follow the visible area).
+- Test: 170 (screen-size test).
+
 ### Fun pass (2026-11-08) — IMPLEMENTED + TESTED (automated); not yet VERIFIED
 You said the game was boring: empty walking, zombies not scary, weak fighting, unclear goals. This pass targets all four.
 - **More action:** the streets around you stay alive by day: about 10 zombies near you on day 1 (+1 each night), spawning out of sight; half of them come looking for you.

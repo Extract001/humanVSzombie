@@ -212,7 +212,7 @@ func _spawn_horde_walker() -> void:
 	var holder: Node = map.get_node_or_null("HordeSpawns")
 	if holder != null:
 		for m in holder.get_children():
-			if (m as Node2D).global_position.distance_to(player.global_position) >= MIN_SPAWN_DISTANCE:
+			if (m as Node2D).global_position.distance_to(player.global_position) >= min_spawn_distance():
 				spawns.append(m)
 	if spawns.is_empty():
 		return
@@ -226,6 +226,12 @@ func _spawn_horde_walker() -> void:
 	z.add_to_group(&"horde")
 	z.died.connect(func() -> void: _night_kills += 1)
 	_horde.append(z)
+
+
+## Never in view, whatever the screen shape (the visible area grows on wide screens).
+func min_spawn_distance() -> float:
+	var half_diag: float = player.get_viewport().get_visible_rect().size.length() * 0.5
+	return maxf(MIN_SPAWN_DISTANCE, half_diag + 30.0)
 
 
 ## A point just inside one of the safehouse windows (nearest windows more likely).

@@ -36,6 +36,15 @@ func setup(game_root: Node, p: Player, actors_root: Node2D) -> void:
 	enabled = not GameState.street_spawns_disabled
 
 
+## Wider screens show more of the world (the game fills any screen shape), so "out of sight"
+## grows with the visible area: never closer than the screen corner + 30 px.
+func spawn_min() -> float:
+	if player == null or not player.is_inside_tree():
+		return SPAWN_MIN
+	var half_diag: float = player.get_viewport().get_visible_rect().size.length() * 0.5
+	return maxf(SPAWN_MIN, half_diag + 30.0)
+
+
 func target_count() -> int:
 	return mini(BASE_TARGET + GameState.nights_survived, MAX_TARGET)
 
@@ -66,11 +75,12 @@ func spawn_one() -> Zombie:
 	if NavigationServer2D.map_get_regions(map).is_empty():
 		return null
 	for attempt in 12:
-		var cand: Vector2 = player.global_position + Vector2.RIGHT.rotated(randf() * TAU) * randf_range(SPAWN_MIN, SPAWN_MAX)
+		var lo: float = spawn_min()
+		var cand: Vector2 = player.global_position + Vector2.RIGHT.rotated(randf() * TAU) * randf_range(lo, lo + SPAWN_MAX - SPAWN_MIN)
 		var on_mesh: Vector2 = NavigationServer2D.map_get_closest_point(map, cand)
 		if on_mesh.distance_to(cand) > 6.0 or game.SAFEHOUSE_RECT.has_point(on_mesh):
 			continue
-		if on_mesh.distance_to(player.global_position) < SPAWN_MIN - 20.0:
+		if on_mesh.distance_to(player.global_position) < lo - 20.0:
 			continue
 		var z: Zombie = WALKER.instantiate()
 		if randf() < LURCHER_CHANCE:

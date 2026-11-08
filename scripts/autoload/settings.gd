@@ -19,7 +19,8 @@ var config_path: String = DEFAULT_PATH
 var master_volume: float = 1.0   ## 0..1
 var sfx_volume: float = 1.0      ## 0..1
 var music_volume: float = 0.8    ## 0..1
-var fullscreen: bool = false
+## Fills the whole screen by default on desktop (browsers only allow fullscreen after a click).
+var fullscreen: bool = not OS.has_feature("web")
 var vsync: bool = true
 var show_fps: bool = true
 ## Flashlight shadows (walls block the beam). Off = faster on weak graphics chips; the beam then
@@ -27,6 +28,10 @@ var show_fps: bool = true
 var flashlight_shadows: bool = true
 ## Fun pass: personal records (kept across games, saved with the settings).
 var best_score: int = 0
+const LAYOUT_VERSION: int = 1
+const BASE_SIZE := Vector2i(640, 360)
+## The most world the game shows at once (keeps fights readable on unusual screens).
+const MAX_VIEW := Vector2i(860, 484)
 var best_nights: int = 0
 
 ## The project's default bindings (copied at startup, before anything is changed).
@@ -39,6 +44,32 @@ func _ready() -> void:
 		_defaults[a[0]] = InputMap.action_get_events(a[0]).duplicate()
 	load_settings()
 	apply()
+	# Fill any screen shape (no black bars) with sharp pixels: see fit_screen().
+	get_tree().root.size_changed.connect(fit_screen)
+	fit_screen()
+
+
+## The base picture is 640×360. The game picks the largest whole-number zoom that fits the
+## window (2× on 1366×768, 3× on 1920×1080, 4× on 2560×1440) and shows a little more of the
+## world to fill the rest, so every screen is covered and pixels stay square and sharp.
+## Very odd sizes (more than ~860×484 at 1×) fall back to smooth scaling of 640×360.
+func fit_screen() -> void:
+	var root: Window = get_tree().root
+	if root.size.x <= 0 or root.size.y <= 0:
+		return
+	var view: Vector2i = view_for(root.size)
+	if root.content_scale_size != view:
+		root.content_scale_size = view
+
+
+## The game's picture size for a window of `win` pixels (see fit_screen).
+static func view_for(win: Vector2i) -> Vector2i:
+	var zoom: int = int(floor(minf(win.x / float(BASE_SIZE.x), win.y / float(BASE_SIZE.y))))
+	if zoom >= 1:
+		var fitted := Vector2i(int(ceil(win.x / float(zoom))), int(ceil(win.y / float(zoom))))
+		if fitted.x <= MAX_VIEW.x and fitted.y <= MAX_VIEW.y:
+			return fitted
+	return BASE_SIZE   # odd sizes: smooth scaling (the "expand" aspect fills the screen)
 
 
 ## Reads the settings file (missing file = defaults). Key bindings from the file replace the defaults.
@@ -49,7 +80,10 @@ func load_settings(path: String = config_path) -> void:
 	master_volume = clampf(float(cfg.get_value("audio", "master", master_volume)), 0.0, 1.0)
 	sfx_volume = clampf(float(cfg.get_value("audio", "sfx", sfx_volume)), 0.0, 1.0)
 	music_volume = clampf(float(cfg.get_value("audio", "music", music_volume)), 0.0, 1.0)
-	fullscreen = bool(cfg.get_value("display", "fullscreen", fullscreen))
+	# Settings files from before the "fill the screen" update (no layout_version) start in
+	# fullscreen once; after that your own choice is kept.
+	if int(cfg.get_value("display", "layout_version", 0)) >= LAYOUT_VERSION:
+		fullscreen = bool(cfg.get_value("display", "fullscreen", fullscreen))
 	vsync = bool(cfg.get_value("display", "vsync", vsync))
 	show_fps = bool(cfg.get_value("display", "show_fps", show_fps))
 	flashlight_shadows = bool(cfg.get_value("display", "flashlight_shadows", flashlight_shadows))
@@ -69,6 +103,7 @@ func save_settings(path: String = config_path) -> void:
 	cfg.set_value("audio", "sfx", sfx_volume)
 	cfg.set_value("audio", "music", music_volume)
 	cfg.set_value("display", "fullscreen", fullscreen)
+	cfg.set_value("display", "layout_version", LAYOUT_VERSION)
 	cfg.set_value("display", "vsync", vsync)
 	cfg.set_value("display", "show_fps", show_fps)
 	cfg.set_value("display", "flashlight_shadows", flashlight_shadows)

@@ -196,3 +196,18 @@ func test_flashlight_shadows_setting() -> void:
 	game.queue_free()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_CFG))
 	Settings.config_path = old_path
+
+
+## Responsive screen: the picture fills common laptop/monitor sizes with whole-number zoom.
+func test_screen_fit_fills_common_sizes() -> void:
+	check_eq(Settings.view_for(Vector2i(1920, 1080)), Vector2i(640, 360), "1920×1080: 3× zoom, exact")
+	check_eq(Settings.view_for(Vector2i(1366, 768)), Vector2i(683, 384), "1366×768: 2× zoom, a bit more world, no bars")
+	check_eq(Settings.view_for(Vector2i(1536, 864)), Vector2i(768, 432), "1536×864 (1080p at 125%): 2×")
+	check_eq(Settings.view_for(Vector2i(2560, 1440)), Vector2i(640, 360), "1440p: 4×")
+	check_eq(Settings.view_for(Vector2i(1920, 1200)), Vector2i(640, 400), "16:10: 3×, taller view")
+	check_eq(Settings.view_for(Vector2i(2560, 1080)), Vector2i(854, 360), "ultrawide: 3×, wider view")
+	check_eq(Settings.view_for(Vector2i(1024, 768)), Settings.BASE_SIZE, "odd sizes fall back to smooth scaling")
+	var v: Vector2i = Settings.view_for(Vector2i(1366, 768))
+	check(v.x * 2 >= 1366 and v.y * 2 >= 768, "the picture covers the whole window")
+	check_eq(ProjectSettings.get_setting("display/window/stretch/aspect"), "expand", "no black bars for other shapes")
+	check(Settings.fullscreen or OS.has_feature("web"), "desktop starts in fullscreen")

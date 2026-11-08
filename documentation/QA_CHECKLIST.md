@@ -306,6 +306,11 @@ This one session covers every open `[WIN-PLAY]` item from Phases 4–10. Play fr
 - [ ] ⏳ `[WIN-PLAY]` **The important one:** play 15 minutes. Is it still boring? Which minute was the most fun, which the most boring? Do hits and kills feel good now? Did the arrow make the goal clear?
 - [ ] ⏳ `[VISUAL]` Hit freeze, blood bursts and splats, "+10" popups, "x3 STREAK!", red flash when hurt, heartbeat under 30 HP, score top right, best score on the main menu
 
+## Full-screen & responsive display
+- [x] ✅ `[LINUX-AUTO]` Picture size for 1920×1080, 1366×768, 1536×864, 2560×1440, 1920×1200, 2560×1080, 1024×768; desktop starts fullscreen; aspect "expand"
+- [x] ✅ `[VISUAL]` (Claude, Linux) Menu, settings, HUD, inventory and dawn screens at 1366×768, 2560×1080 and 1024×768 fill the screen with nothing cut off; web build canvas fills 1366×768 and 1100×700 browser windows
+- [ ] ⏳ `[WIN-PLAY]` On your laptop: the game fills the whole screen, no black bars; Settings → Fullscreen off gives a window you can resize and it still fills; text readable
+
 ## Phase 12 — Release
 - [ ] `[WIN-PLAY]` 30-minute session with no crash and no memory growth trend (FPS counter shows memory when run from the editor)
 - [ ] `[WIN-PLAY]` Windows .exe runs on a clean machine (no Godot installed)

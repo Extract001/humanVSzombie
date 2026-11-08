@@ -260,6 +260,9 @@ Spent ammo and consumables were already removed from the inventory when used, so
 - `GoalFinder` + `scripts/ui/goal_marker.gd`: HUD arrow to the next useful place, recomputed 4× per second.
 - Horde corpses are cleared at dawn (no pile-up over many nights).
 
+### 4.10g Screen fitting (2026-11-09)
+`project.godot`: stretch mode `viewport`, aspect `expand`, scale mode `fractional`; `Settings.fit_screen()` (on start and on every window resize) sets `root.content_scale_size = Settings.view_for(window)`: zoom = floor(min(w/640, h/360)), view = ceil(window/zoom) (so the zoom is a whole number and the window is filled), unless that is larger than 860×484, then 640×360 smooth-scaled. Desktop default fullscreen (settings `layout_version` 1 migrates old files once). Population / DayCycle spawn distances grow with the visible area (half diagonal + 30 px). Mobile portrait is not a target yet (§4.11).
+
 ### 4.11 Input & mobile readiness
 All gameplay reads **actions** (`Input.get_vector("move_left", ...)`), never raw keys. Aim is an abstract `aim_direction` the player script receives. Mouse sets it on desktop; Godot 4.7's built-in `VirtualJoystick` can set it on Android later without touching gameplay code.
 

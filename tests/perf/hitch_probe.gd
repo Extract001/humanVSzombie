@@ -10,6 +10,8 @@ var p: Player
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	SaveSystem.path = "user://tool_save.json"
+	GameState.street_spawns_disabled = true  # fun pass: measure the placed/horde zombies only
+	GameState.records_disabled = true
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	game = load("res://scenes/main/game.tscn").instantiate()
 	add_child(game)

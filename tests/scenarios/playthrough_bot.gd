@@ -17,14 +17,27 @@ var game: Node
 var p: Player
 var failures: PackedStringArray = []
 var _bites: int = 0
+## Mode B "action" measurement: share of time with a zombie chasing you, longest calm gap.
+var _chase_frames: int = 0
+var _all_frames: int = 0
+var _calm_run: int = 0
+var _longest_calm: int = 0
+var _measure_action: bool = false
 
 
 func _ready() -> void:
 	SaveSystem.path = "user://tool_save.json"
+	GameState.street_spawns_disabled = true  # fun pass: measure the placed/horde zombies only
+	GameState.records_disabled = true
 	print("PLAYTHROUGH BOT")
 	for s in SEEDS:
 		await _run(s, false)
 	await _run(SEEDS[0], true)
+	if OS.get_environment("BOT_COMPARE") != "":
+		for sd in SEEDS.slice(1):
+			await _run(sd, true)
+		for sd in SEEDS:
+			await _run(sd, true, false)   # same, without the fun-pass street spawns
 	for f in [SaveSystem.path, SaveSystem.path + ".bak", SaveSystem.path + ".tmp"]:
 		if FileAccess.file_exists(f):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(f))
@@ -37,8 +50,8 @@ func _ready() -> void:
 	get_tree().quit(0 if failures.is_empty() else 1)
 
 
-func _run(seed_value: int, with_zombies: bool) -> void:
-	var label: String = "seed %d%s" % [seed_value, " + Walkers" if with_zombies else ""]
+func _run(seed_value: int, with_zombies: bool, street_spawns: bool = true) -> void:
+	var label: String = "seed %d%s" % [seed_value, (" + Walkers" if street_spawns else " + placed only") if with_zombies else ""]
 	SaveSystem.fresh_start = true
 	GameState.new_game(seed_value)
 	game = load("res://scenes/main/game.tscn").instantiate()
@@ -48,6 +61,12 @@ func _run(seed_value: int, with_zombies: bool) -> void:
 	p.use_mouse_aim = false
 	_bites = 0
 	if with_zombies:
+		game.population.enabled = street_spawns   # the real daytime streets (fun pass spawns)
+		_chase_frames = 0
+		_all_frames = 0
+		_calm_run = 0
+		_longest_calm = 0
+		_measure_action = true
 		p.health.setup(1.0e9)
 		p.health.damaged.connect(func(_a: float, _s: Node) -> void: _bites += 1)
 	else:
@@ -93,6 +112,10 @@ func _run(seed_value: int, with_zombies: bool) -> void:
 	var minutes: float = (Engine.get_physics_frames() - start_ticks) / 60.0 / 60.0
 	print("BOT %-16s %s  game time %.1f min  bites %d  kills %d" % [label, "ENDING REACHED" if ok else "STOPPED",
 		minutes, _bites, int(GameState.stats.get("kills", 0))])
+	if _measure_action:
+		_measure_action = false
+		print("BOT %-16s action: chased %d%% of the time, longest calm stretch %.0f s, score %d" % [label,
+			roundi(100.0 * _chase_frames / maxf(1, _all_frames)), _longest_calm / 60.0, GameState.score])
 	if with_zombies and not ok:
 		print("BOT   (report only) stopped at: ", failures[failures.size() - 1])
 		failures.remove_at(failures.size() - 1)  # mode B is report-only (bots don't fight well)
@@ -103,12 +126,13 @@ func _run(seed_value: int, with_zombies: bool) -> void:
 func _first_night(label: String) -> bool:
 	game.ending_panel.close()
 	await _frames(2)
-	if not await _go_and_use_retry(game.get_node("World/Map/Bed"), "use", 1):
-		_fail(label, "couldn't use the bed")
-		return false
-	if GameState.phase != GameState.Phase.DUSK:
-		_fail(label, "sleeping didn't skip to dusk")
-		return false
+	if GameState.phase == GameState.Phase.DAY:
+		if not await _go_and_use_retry(game.get_node("World/Map/Bed"), "use", 1):
+			_fail(label, "couldn't use the bed")
+			return false
+		if GameState.phase != GameState.Phase.DUSK:
+			_fail(label, "sleeping didn't skip to dusk")
+			return false
 	p.health.setup(1.0e9)   # the bot doesn't fight at night; the siege scenarios measure that
 	var limit: int = Engine.get_physics_frames() + int((SiegeData.new().dusk_length + SiegeData.new().night_length + 10.0) * 60.0)
 	var saw_night := false
@@ -271,3 +295,16 @@ func _go_and_use(node: Node, kind: String) -> bool:
 func _frames(n: int) -> void:
 	for i in n:
 		await get_tree().physics_frame
+		if _measure_action and is_instance_valid(p):
+			_all_frames += 1
+			var chased := false
+			for z in get_tree().get_nodes_in_group(&"zombies"):
+				if (z as Zombie).state == Zombie.State.CHASE or (z as Zombie).state == Zombie.State.ATTACK:
+					chased = true
+					break
+			if chased:
+				_chase_frames += 1
+				_calm_run = 0
+			else:
+				_calm_run += 1
+				_longest_calm = maxi(_longest_calm, _calm_run)

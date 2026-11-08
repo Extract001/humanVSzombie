@@ -5,6 +5,8 @@ extends Node2D
 
 func _ready() -> void:
 	SaveSystem.path = "user://tool_save.json"
+	GameState.street_spawns_disabled = true  # fun pass: measure the placed/horde zombies only
+	GameState.records_disabled = true
 	var game: Node = load("res://scenes/main/game.tscn").instantiate()
 	add_child(game)
 	var p: Player = game.get_node("World/Actors/Player")

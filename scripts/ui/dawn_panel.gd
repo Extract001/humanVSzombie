@@ -51,6 +51,9 @@ func show_summary(s: Dictionary) -> void:
 		_button.text = "Continue"
 	lines.append("The horde: %d   Killed tonight: %d   Left at dawn: %d" % [int(s.horde), int(s.killed), int(s.left)])
 	lines.append("Boards broken: %d   Yesterday's Heat: %d" % [int(s.boards_lost), roundi(float(s.heat))])
+	if s.has("score"):
+		lines.append("Night bonus +%d   SCORE %d   %s" % [int(s.night_points), int(s.score),
+			"NEW BEST!" if s.get("new_best", false) else "Best %d" % int(s.get("best", 0))])
 	if int(s.get("restocked", 0)) > 0:
 		lines.append("Fresh supplies turned up in %d places around town." % int(s.restocked))
 	if not s.get("evac", false):

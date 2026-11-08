@@ -102,7 +102,8 @@ func test_cycle_day_dusk_night_dawn() -> void:
 	for z in get_tree().get_nodes_in_group(&"horde"):
 		if (z as Zombie).state != Zombie.State.DEAD:
 			living += 1
-	check_eq(living, 0, "the horde leaves at dawn (only corpses stay)")
+	check_eq(living, 0, "the horde leaves at dawn")
+	check(get_tree().get_nodes_in_group(&"horde").is_empty(), "and its corpses are cleared")
 	_close_dawn(game)
 	check(not get_tree().paused, "Continue resumes")
 	game.queue_free()

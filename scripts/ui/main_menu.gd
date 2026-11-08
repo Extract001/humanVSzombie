@@ -47,7 +47,11 @@ func _ready() -> void:
 	var title := UiKit.title("LAST SIGNAL")
 	title.add_theme_font_size_override(&"font_size", 30)  # 3x pixel font
 	box.add_child(title)
-	box.add_child(UiKit.label("Ashford Lane, day 1 of the outbreak.", 10, UiKit.TEXT.darkened(0.25)))
+	box.add_child(UiKit.label("Survive the nights. Ten of them.", 10, UiKit.TEXT.darkened(0.25)))
+	if Settings.best_score > 0:
+		var rec := UiKit.label("BEST SCORE %d   MOST NIGHTS %d" % [Settings.best_score, Settings.best_nights], 10, Color(1, 0.88, 0.45))
+		rec.name = "RecordsLabel"
+		box.add_child(rec)
 	box.add_child(Control.new())
 	new_button = _menu_button(box, "New game", ask_new_game)
 	continue_button = _menu_button(box, "Continue", continue_game)

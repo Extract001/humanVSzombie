@@ -252,6 +252,14 @@ Spent ammo and consumables were already removed from the inventory when used, so
 - Horde Walkers: `Zombie.siege_goal` (a point just inside a window). When calm they march there (INVESTIGATE with a 120 s patience) and never go dormant; noises and the player still distract them.
 - `scripts/ui/dawn_panel.gd`: morning summary (pauses the game), "RESCUED" variant after night 10 with the radio repaired, then "Keep surviving".
 
+### 4.10f Fun pass
+- `Population` (`scripts/main/population.gd`, runtime node): by day keeps `10 + nights` (max 18) zombies within 520 px of the player; spawns one per second out of view (380–560 px, on the navigation mesh, never in the safehouse), 20 % Lurchers, 50 % "heard something" (walk towards the player); removes far, calm spawns and far corpses (950 px). Off at dusk/night, in tests and tools (`GameState.street_spawns_disabled`).
+- Lurcher = `data/zombies/lurcher.tres` (same scene, new ZombieData with `tint` and `score`).
+- `Juice` (`scripts/world/juice.gd`): hit-stop via `Engine.time_scale` (skipped headless, so tests and bots are unaffected), world popups, kill bursts.
+- `ScoreKeeper` (`scripts/main/score_keeper.gd`): every zombie death reaches the `score_listeners` group (game.gd counts kills there too); streak window 4 s, ×5 max; +2 per looted item (not your own piles), +100 objective, +50 × night; blood splats (max 80). Records `best_score` / `best_nights` in settings.cfg (`[records]`), never from tests (`GameState.records_disabled`). `GameState.score` is saved.
+- `GoalFinder` + `scripts/ui/goal_marker.gd`: HUD arrow to the next useful place, recomputed 4× per second.
+- Horde corpses are cleared at dawn (no pile-up over many nights).
+
 ### 4.11 Input & mobile readiness
 All gameplay reads **actions** (`Input.get_vector("move_left", ...)`), never raw keys. Aim is an abstract `aim_direction` the player script receives. Mouse sets it on desktop; Godot 4.7's built-in `VirtualJoystick` can set it on Android later without touching gameplay code.
 

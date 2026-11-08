@@ -31,6 +31,12 @@ var noise_level: float = 0.0
 var _cycle: DayCycle
 var clock_label: Label
 var heat_label: Label
+## Fun pass: score, streak, damage flash, low-health heartbeat, goal arrow.
+var score_label: Label
+var streak_label: Label
+var hurt_flash: TextureRect
+var goal_marker: Control
+var _heartbeat_left: float = 0.0
 var _noise_hold: float = 0.0
 
 const NOISE_METER_MAX: float = 480.0  # a pistol shot fills the meter
@@ -66,6 +72,96 @@ func bind(player: Player) -> void:
 	NoiseSystem.noise_emitted.connect(_on_noise)
 	player.flashlight_changed.connect(_on_flashlight_changed)
 	_on_flashlight_changed(player.flashlight_on, player.flashlight_charge_ratio())
+	_build_fun_widgets()
+	player.health.damaged.connect(func(_a: float, _s: Node) -> void: flash_hurt())
+
+
+func _build_fun_widgets() -> void:
+	var root: Control = $Root
+	# A red vignette: clear in the middle, red at the screen edges.
+	hurt_flash = TextureRect.new()
+	hurt_flash.name = "HurtFlash"
+	var g := Gradient.new()
+	g.set_color(0, Color(0.75, 0.0, 0.0, 0.0))
+	g.set_color(1, Color(0.75, 0.0, 0.0, 1.0))
+	g.add_point(0.55, Color(0.75, 0.0, 0.0, 0.0))
+	var tex := GradientTexture2D.new()
+	tex.gradient = g
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.5, 0.5)
+	tex.fill_to = Vector2(1.05, 0.5)
+	tex.width = 64
+	tex.height = 64
+	hurt_flash.texture = tex
+	hurt_flash.stretch_mode = TextureRect.STRETCH_SCALE
+	hurt_flash.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	hurt_flash.modulate.a = 0.0
+	hurt_flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	hurt_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(hurt_flash)
+	root.move_child(hurt_flash, 0)
+	score_label = UiKit.label("SCORE 0", 10, Color(1, 0.88, 0.45))
+	score_label.name = "ScoreLabel"
+	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	score_label.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	score_label.offset_left = -160
+	score_label.offset_right = -8
+	score_label.offset_top = 16
+	score_label.offset_bottom = 26
+	root.add_child(score_label)
+	streak_label = UiKit.label("", 20, Color(1, 0.55, 0.3))
+	streak_label.name = "StreakLabel"
+	streak_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	streak_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	streak_label.offset_left = -120
+	streak_label.offset_right = 120
+	streak_label.offset_top = 30
+	streak_label.offset_bottom = 52
+	streak_label.pivot_offset = Vector2(120, 11)
+	streak_label.add_theme_color_override(&"font_shadow_color", Color(0, 0, 0, 0.9))
+	streak_label.add_theme_constant_override(&"shadow_offset_x", 2)
+	streak_label.add_theme_constant_override(&"shadow_offset_y", 2)
+	root.add_child(streak_label)
+	goal_marker = Control.new()
+	goal_marker.name = "GoalMarker"
+	goal_marker.set_script(load("res://scripts/ui/goal_marker.gd"))
+	root.add_child(goal_marker)
+	# A method (not a lambda): autoload signals drop method connections when the HUD is freed.
+	GameState.score_changed.connect(_on_score_changed)
+	_on_score_changed(GameState.score)
+
+
+func _on_score_changed(s: int) -> void:
+	score_label.text = "SCORE %d" % s
+
+
+## Fun pass: the goal arrow needs the game (objectives, safehouse, phase).
+func bind_game(game: Node) -> void:
+	if goal_marker != null:
+		goal_marker.game = game
+
+
+func show_streak(streak: int) -> void:
+	if streak_label == null:
+		return
+	if streak < 2:
+		var fade: Tween = create_tween()
+		fade.tween_property(streak_label, "modulate:a", 0.0, 0.3)
+		return
+	streak_label.text = "x%d STREAK!" % mini(streak, ScoreKeeper.MAX_MULT) if streak <= ScoreKeeper.MAX_MULT else "x%d STREAK! (%d)" % [ScoreKeeper.MAX_MULT, streak]
+	streak_label.modulate.a = 1.0
+	streak_label.scale = Vector2(1.5, 1.5)
+	var t: Tween = create_tween()
+	t.tween_property(streak_label, "scale", Vector2.ONE, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+## Red flash at the screen edges when you're hurt.
+func flash_hurt() -> void:
+	if hurt_flash == null:
+		return
+	hurt_flash.modulate.a = 0.65
+	var t: Tween = create_tween()
+	t.tween_property(hurt_flash, "modulate:a", 0.0, 0.45)
 
 
 func _build_phase6_widgets() -> void:
@@ -267,6 +363,16 @@ func set_kills(kills: int) -> void:
 func _process(delta: float) -> void:
 	if _cycle != null and Engine.get_process_frames() % 10 == 0:
 		_update_cycle_labels()
+	# Low health: heartbeat, and the screen edge stays faintly red.
+	if _player != null and not _player.is_dead() and _player.health.current_health <= _player.health.max_health * 0.3:
+		_heartbeat_left -= delta
+		if _heartbeat_left <= 0.0:
+			_heartbeat_left = 0.9
+			AudioManager.play_ui(preload("res://assets/audio/sfx/heartbeat.wav"), -6.0)
+		if hurt_flash != null and hurt_flash.modulate.a < 0.35:
+			hurt_flash.modulate.a = 0.35
+	elif hurt_flash != null and hurt_flash.modulate.a > 0.0 and hurt_flash.modulate.a <= 0.35:
+		hurt_flash.modulate.a = 0.0
 	fps_label.visible = Settings.show_fps
 	if fps_label.visible:
 		# Phase 11: memory next to the FPS for long play sessions (only reported by debug/editor runs).

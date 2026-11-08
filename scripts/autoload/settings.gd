@@ -25,6 +25,9 @@ var show_fps: bool = true
 ## Flashlight shadows (walls block the beam). Off = faster on weak graphics chips; the beam then
 ## shines through walls. Visual only: zombies still can't see through walls either way.
 var flashlight_shadows: bool = true
+## Fun pass: personal records (kept across games, saved with the settings).
+var best_score: int = 0
+var best_nights: int = 0
 
 ## The project's default bindings (copied at startup, before anything is changed).
 var _defaults: Dictionary = {}
@@ -50,6 +53,8 @@ func load_settings(path: String = config_path) -> void:
 	vsync = bool(cfg.get_value("display", "vsync", vsync))
 	show_fps = bool(cfg.get_value("display", "show_fps", show_fps))
 	flashlight_shadows = bool(cfg.get_value("display", "flashlight_shadows", flashlight_shadows))
+	best_score = int(cfg.get_value("records", "best_score", 0))
+	best_nights = int(cfg.get_value("records", "best_nights", 0))
 	for a in REBINDABLE:
 		if not cfg.has_section_key("controls", String(a[0])):
 			continue
@@ -67,6 +72,8 @@ func save_settings(path: String = config_path) -> void:
 	cfg.set_value("display", "vsync", vsync)
 	cfg.set_value("display", "show_fps", show_fps)
 	cfg.set_value("display", "flashlight_shadows", flashlight_shadows)
+	cfg.set_value("records", "best_score", best_score)
+	cfg.set_value("records", "best_nights", best_nights)
 	for a in REBINDABLE:
 		var ev: InputEvent = primary_event(a[0])
 		if ev != null and not _same(ev, _default_primary(a[0])):

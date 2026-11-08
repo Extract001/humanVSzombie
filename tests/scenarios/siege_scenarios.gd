@@ -17,6 +17,8 @@ var rows: PackedStringArray = []
 
 func _ready() -> void:
 	SaveSystem.path = "user://tool_save.json"
+	GameState.street_spawns_disabled = true  # fun pass: measure the placed/horde zombies only
+	GameState.records_disabled = true
 	print("SIEGE SCENARIOS (night length %d s, %d Walker damage per hit on boards every %.1f s, %d HP per plank)" % [
 		SIEGE.night_length, SIEGE.zombie_barricade_damage, SIEGE.zombie_barricade_interval, SIEGE.plank_health])
 	print("mode     night heat boards | horde | 1st breach | windows broken | got inside | bites  dmg | kills | scrap used")

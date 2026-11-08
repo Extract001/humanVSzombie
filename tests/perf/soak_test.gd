@@ -9,6 +9,8 @@ const CYCLES: int = 12
 
 func _ready() -> void:
 	SaveSystem.path = "user://tool_save.json"
+	GameState.street_spawns_disabled = true  # fun pass: measure the placed/horde zombies only
+	GameState.records_disabled = true
 	var rows: Array = []
 	for c in CYCLES:
 		await _cycle()
@@ -89,6 +91,7 @@ func _long_session() -> bool:
 	p.use_mouse_aim = false
 	p.health.setup(1.0e9)
 	p.inventory.add_item(&"ammo_pistol", 500)
+	game.day_cycle.set_physics_process(false)   # stay in daylight: this checks effects, not the horde
 	p.try_switch(1)
 	var samples: Array = []
 	for minute_part in 10:  # 10 x 30 s

@@ -12,6 +12,9 @@ func _ready() -> void:
 	await get_tree().process_frame
 	# Tests always use the default key bindings, whatever the player saved in settings.cfg.
 	Settings.reset_bindings(false)
+	# Fun pass: no random street spawns in tests (tests that need them switch them on), no records.
+	GameState.street_spawns_disabled = true
+	GameState.records_disabled = true
 	# Tests never touch your real save: they use their own file, removed at the end.
 	SaveSystem.path = "user://test_runner_save.json"
 	var total: int = 0

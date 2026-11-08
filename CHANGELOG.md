@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Fun pass (2026-11-08) — IMPLEMENTED + TESTED (automated); not yet VERIFIED
+You said the game was boring: empty walking, zombies not scary, weak fighting, unclear goals. This pass targets all four.
+- **More action:** the streets around you stay alive by day: about 10 zombies near you on day 1 (+1 each night), spawning out of sight; half of them come looking for you.
+- **Lurchers:** a new fast zombie (reddish). It outruns you walking but not running, and dies faster (40 HP). 20% of street zombies, 25% of the night horde.
+- **Fighting feels better:** a tiny freeze on every hit and a longer one on kills, big blood bursts, splats on the ground, a crunch sound, a red flash at the screen edges when you're hurt, and a heartbeat under 30 HP.
+- **Score and streaks:** kills 10 points (Lurcher 20), multiplied by your streak (kills less than 4 s apart: x2 … x5, "x3 STREAK!" in big letters). Loot +2 per item, objectives +100, nights +50 × night. Score at the top right and in the dawn summary; **best score and most nights** on the main menu.
+- **Where to go:** a cyan arrow with distance points to the next useful place: SEARCH (a container that has what you need), STASH, CUT (the gate), RADIO; at dusk an orange HOME, at home BOARD UP.
+- **Faster pacing:** the day is 2.5 minutes (was 5), dusk 30 s (was 45), searches about 40% faster.
+- Horde corpses are cleared at dawn. All zombie deaths count kills the same way.
+- New original sounds: kill crunch, streak chime, heartbeat (`tools/asset_generators/make_audio_fun.py`).
+- Tests: 169 (7 new in `tests/test_fun.gd`). Tests, bots and tools never write your best score and run without street spawns.
+
 ### Redesign Slice 1 — Day/night siege (2026-11-08) — IMPLEMENTED + TESTED (automated); not yet VERIFIED
 New core loop chosen by you: scavenge by day, defend the safehouse at night (GDD §0).
 - **Day/night cycle:** DAY 5 min (06:00–18:00) → DUSK 45 s → NIGHT 2.5 min → DAWN. Clock and phase at the top of the screen. Dusk turns the world orange, night dark blue; a warm lamp lights the safehouse. Outside at night counts as darkness (Walkers see you at half range; a lit flashlight gives you away).

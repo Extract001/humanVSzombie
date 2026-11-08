@@ -32,6 +32,9 @@ const SAFEHOUSE_RECT := Rect2(71 * 16, 65 * 16, 15 * 16, 13 * 16)
 var piles_root: Node2D
 var day_cycle: DayCycle
 var dawn_panel: CanvasLayer
+## Fun pass
+var score_keeper: ScoreKeeper
+var population: Population
 var _last_backpack: StringName = &""
 
 var elapsed: float = 0.0
@@ -78,15 +81,31 @@ func _ready() -> void:
 	add_child(dawn_panel)
 	dawn_panel.bind(player)
 
+	var splats := Node2D.new()
+	splats.name = "BloodSplats"
+	world.add_child(splats)
+	world.move_child(splats, piles_root.get_index())  # under piles and actors
+	score_keeper = ScoreKeeper.new()
+	score_keeper.name = "ScoreKeeper"
+	add_child(score_keeper)
+	score_keeper.setup(world, splats, player)
+	population = Population.new()
+	population.name = "Population"
+	add_child(population)
+	population.setup(self, player, world.get_node("Actors"))
+
 	Soundscape.player = player
 	hud.bind(player)
 	hud.bind_cycle(day_cycle)
+	hud.bind_game(self)
+	score_keeper.streak_changed.connect(hud.show_streak)
 	loot_panel.bind(player)
 	inventory_panel.bind(player)
 	stash_panel.bind(player)
 	objectives_panel.bind(player, objectives)
 	ending_panel.bind(player)
 	objectives.objective_completed.connect(func(o: ObjectiveData) -> void:
+		score_keeper.on_objective_completed()
 		get_tree().call_group(&"hud", &"show_toast", "Objective complete: " + o.title))
 	objectives.chain_completed.connect(func() -> void: ending_panel.open())
 	objectives.progress_changed.connect(func(o: ObjectiveData) -> void:
@@ -105,8 +124,7 @@ func _ready() -> void:
 	game_over.respawn_requested.connect(respawn_player)
 	player.backpack_dropped.connect(func(id: StringName) -> void: _last_backpack = id)
 	player.died.connect(_on_player_died)
-	for zombie in get_tree().get_nodes_in_group(&"zombies"):
-		(zombie as Zombie).died.connect(_on_zombie_died)
+	add_to_group(&"score_listeners")   # every zombie death (placed, street, horde) counts
 	# The crosshair replaces the system cursor during play (not in tests/headless runs).
 	if DisplayServer.get_name() != "headless":
 		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
@@ -171,6 +189,10 @@ func _wants_perf_log() -> bool:
 	return OS.get_cmdline_user_args().has("--perf-log")
 
 
+func on_zombie_killed(_z: Zombie) -> void:
+	_on_zombie_died()
+
+
 func _on_zombie_died() -> void:
 	kills += 1
 	GameState.stats.kills = int(GameState.stats.get("kills", 0)) + 1
@@ -179,6 +201,7 @@ func _on_zombie_died() -> void:
 
 func _on_player_died() -> void:
 	save_now("death")   # immediately, so quitting can't undo the death (GDD §3)
+	score_keeper.record()
 	await get_tree().create_timer(DEATH_SCREEN_DELAY, false).timeout
 	if not player.is_dead():
 		return
@@ -256,6 +279,10 @@ func try_sleep() -> bool:
 
 ## Slice 1: a night was survived. Save first (the summary pauses the game), then show it.
 func _on_dawn(summary: Dictionary) -> void:
+	summary["night_points"] = score_keeper.on_night_survived(int(summary.night))
+	summary["score"] = GameState.score
+	summary["new_best"] = score_keeper.record()
+	summary["best"] = Settings.best_score
 	save_now("dawn")
 	dawn_panel.show_summary(summary)
 

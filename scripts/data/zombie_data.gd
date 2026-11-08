@@ -5,6 +5,10 @@ extends Resource
 
 @export var id: StringName = &"walker"
 @export var display_name: String = "Walker"
+## Fun pass: colour tint so types read at a glance (Lurcher = reddish).
+@export var tint: Color = Color.WHITE
+## Score for killing one (fun pass).
+@export var score: int = 10
 
 @export_group("Health")
 @export var max_health: float = 60.0

@@ -83,6 +83,7 @@ func _ready() -> void:
 	home_position = global_position
 	health.setup(data.max_health)
 	health.died.connect(_on_died)
+	modulate = data.tint
 	nav_agent.navigation_layers = 1 | NavigationBaker.WINDOW_NAV_LAYER  # Slice 1: may path through windows
 	nav_agent.link_reached.connect(_on_link_reached)
 	# Random start offsets so many zombies don't all think (or wander) on the same frame.
@@ -375,6 +376,8 @@ func on_hit(_amount: float, knockback: Vector2, stun_time: float, source: Node) 
 	_stun_left = stun
 	is_dormant = false
 	sprite.modulate = Color(2.2, 2.2, 2.2)  # white hit flash
+	if source is Player:
+		Juice.hit_stop(get_tree(), 0.035)  # fun pass: hits land with weight
 	Fx.burst(get_parent(), global_position + Vector2(0, -9), Fx.BLOOD, 8, 55.0, knockback.normalized())
 	# Being hurt reveals the attacker: turn on them once the stun ends.
 	if source is Node2D:
@@ -494,6 +497,10 @@ func _on_died() -> void:
 	var tween: Tween = create_tween()
 	tween.tween_property(sprite, "modulate", Color(0.62, 0.6, 0.56), 0.5)
 	AudioManager.play_at(preload("res://assets/audio/sfx/zombie_death.wav"), global_position, -3.0)
+	AudioManager.play_at(preload("res://assets/audio/sfx/kill_crunch.wav"), global_position, -2.0, 0.12)
+	Juice.kill_burst(get_parent(), global_position, -facing)
+	Juice.hit_stop(get_tree(), 0.07)
+	get_tree().call_group(&"score_listeners", &"on_zombie_killed", self)
 	died.emit()
 
 

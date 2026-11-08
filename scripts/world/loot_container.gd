@@ -12,9 +12,9 @@ enum Look { SHELF_GOODS, MEDICAL_CABINET, TOOLBOX, STORAGE_BOX, LOCKER, KITCHEN_
 
 ## Search duration per container type (seconds); types not listed use DEFAULT_SEARCH_TIME.
 const SEARCH_TIMES: Dictionary = {
-	&"grocery_shelf": 0.8, &"kitchen": 0.8, &"medical_shelf": 0.8, &"medical_counter": 1.0,
-	&"medical_cabinet": 1.2, &"locker": 1.2, &"storage_box": 1.2, &"toolbox": 1.2,
-	&"vehicle_trunk": 2.0,
+	&"grocery_shelf": 0.5, &"kitchen": 0.5, &"medical_shelf": 0.5, &"medical_counter": 0.6,
+	&"medical_cabinet": 0.7, &"locker": 0.7, &"storage_box": 0.7, &"toolbox": 0.7,
+	&"vehicle_trunk": 1.2,
 }
 const DEFAULT_SEARCH_TIME: float = 1.0
 ## Rummaging is audible to zombies close by.

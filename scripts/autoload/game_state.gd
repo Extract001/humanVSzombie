@@ -47,6 +47,12 @@ var nights_survived: int = 0
 var barricades: Dictionary = {}
 ## container_id -> how many times it was restocked at dawn (gives each refill its own roll).
 var restocks: Dictionary = {}
+## Fun pass: this run's score (kills × streak, loot, nights, objectives).
+signal score_changed(score: int)
+var score: int = 0
+## Tests, bots and tools: no random street spawns, never write your best score.
+var street_spawns_disabled: bool = false
+var records_disabled: bool = false
 
 var _next_pile: int = 1
 
@@ -69,6 +75,7 @@ func new_game(seed_value: int = -1) -> void:
 	nights_survived = 0
 	barricades = {}
 	restocks = {}
+	score = 0
 	_next_pile = 1
 	piles_changed.emit()
 
@@ -161,6 +168,13 @@ func add_heat(amount: float) -> void:
 		return
 	heat += amount
 	heat_changed.emit(heat)
+
+
+func add_score(points: int) -> void:
+	if points == 0:
+		return
+	score += points
+	score_changed.emit(score)
 
 
 func reset_heat() -> void:
@@ -316,6 +330,7 @@ func to_dict() -> Dictionary:
 		"nights_survived": nights_survived,
 		"barricades": _string_keys(barricades),
 		"restocks": _string_keys(restocks),
+		"score": score,
 	}
 
 
@@ -365,6 +380,7 @@ func from_dict(d: Dictionary) -> void:
 	var bd: Dictionary = d.get("barricades", {})
 	for id in bd:
 		barricades[StringName(id)] = float(bd[id])
+	score = int(d.get("score", 0))
 	restocks.clear()
 	var rs: Dictionary = d.get("restocks", {})
 	for id in rs:

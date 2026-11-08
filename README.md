@@ -4,7 +4,7 @@ A top-down 2D zombie survival game made with **Godot 4.7.2** and **GDScript**.
 
 > Status: **Redesign Slice 1 — day/night siege.** Scavenge by day; at night the horde attacks your safehouse; survive 10 nights and repair the radio to be rescued. Slice 1 and Phases 4–11 are TESTED by automated checks and wait for your Windows play-tests. Phase 2 VERIFIED. Phase 3 **not VERIFIED** (30 FPS on your laptop: please run `validate.bat perf`). All art, sound and music is original, made from code (`tools/asset_generators/`).
 
-**How a day works:** DAY (5 min, clock at the top) → DUSK (45 s: get home, press **E** on a window to nail a plank, 1 scrap each, max 3) → NIGHT (2.5 min: the horde attacks the three windows; the front door holds) → DAWN (summary, autosave). Loud noises by day (gunshots, cutting locks) raise **HEAT**: the top of the screen shows how many will come tonight. The bed heals you and skips to dusk.
+**How a day works:** DAY (2.5 min, clock at the top; an arrow shows where to go next) → DUSK (30 s: get home, press **E** on a window to nail a plank, 1 scrap each, max 3) → NIGHT (2.5 min: the horde attacks the three windows; the front door holds) → DAWN (summary, score, autosave). Loud noises by day (gunshots, cutting locks) raise **HEAT**: the top of the screen shows how many will come tonight. Kills chain into streaks (x2…x5) for more points; reddish **Lurchers** are fast: run or fight. The bed heals you and skips to dusk.
 
 ## Requirements
 - Godot 4.7.2-stable, Standard edition (installed at `C:\Al-am\Game_engine\`)

@@ -27,7 +27,9 @@ var _vp: RID
 
 
 func _ready() -> void:
-	SaveSystem.path = "user://tool_save.json"  # never touch the player's real save
+	SaveSystem.path = "user://tool_save.json"
+	GameState.street_spawns_disabled = true  # fun pass: measure the placed/horde zombies only
+	GameState.records_disabled = true  # never touch the player's real save
 	_quick = OS.get_cmdline_user_args().has("--quick")
 	_vp = get_viewport().get_viewport_rid()
 	RenderingServer.viewport_set_measure_render_time(_vp, true)

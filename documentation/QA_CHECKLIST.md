@@ -296,6 +296,16 @@ This one session covers every open `[WIN-PLAY]` item from Phases 4–10. Play fr
 - [ ] ⏳ `[VISUAL]` Dusk colour, night darkness, safehouse lamp, planks on the windows, clock/Heat line at the top
 - [ ] ⏳ `[WIN-AUTO]` `validate.bat scenarios` → send `logs\siege_scenarios.txt`; `validate.bat perf` now also has "night" rows (40 Walkers + flashlight)
 
+## Fun pass (owner: "the game is very boring")
+*Automated results (2026-11-08):* `[LINUX-AUTO]` 169/169 + both render tests + playthrough bot + memory soak, VALIDATION PASSED.
+- [x] ✅ `[LINUX-AUTO]` Score: kill 10 (Lurcher 20) × streak (kills < 4 s apart, up to ×5); +2 per looted item (not your own drops); +100 objective; +50 × night; score saved; records only outside tests
+- [x] ✅ `[LINUX-AUTO]` Street population: spawns out of view on walkable ground, never in the safehouse, removed when far, off at dusk/night; Lurchers outrun walking but not running
+- [x] ✅ `[LINUX-AUTO]` Goal arrow: SEARCH (container with what you need) → STASH (carrying enough) → pickup truck → CUT (gate) …; HOME at dusk outside; BOARD UP at home with scrap
+- [x] ✅ `[LINUX-AUTO]` Measured with the bot on 5 seeds (bat + shove, same route): time with a zombie chasing you 31% → **50%**; longest quiet stretch 20 s → **14 s**; kills per day 7 → **14**; bites per day 0.8 → 3.6 (≈ 43 HP: dangerous but survivable)
+- [x] ✅ `[LINUX-AUTO]` Nights with Lurchers in the horde: same difficulty profile as before (siege scenarios)
+- [ ] ⏳ `[WIN-PLAY]` **The important one:** play 15 minutes. Is it still boring? Which minute was the most fun, which the most boring? Do hits and kills feel good now? Did the arrow make the goal clear?
+- [ ] ⏳ `[VISUAL]` Hit freeze, blood bursts and splats, "+10" popups, "x3 STREAK!", red flash when hurt, heartbeat under 30 HP, score top right, best score on the main menu
+
 ## Phase 12 — Release
 - [ ] `[WIN-PLAY]` 30-minute session with no crash and no memory growth trend (FPS counter shows memory when run from the editor)
 - [ ] `[WIN-PLAY]` Windows .exe runs on a clean machine (no Godot installed)

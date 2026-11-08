@@ -18,6 +18,9 @@ signal dawn(summary: Dictionary)
 const WALKER: PackedScene = preload("res://scenes/zombies/walker.tscn")
 ## Horde Walkers never appear closer than this to the player (they walk in from the edges).
 const MIN_SPAWN_DISTANCE: float = 360.0
+## Fun pass: a quarter of the night horde are fast Lurchers.
+const LURCHER: ZombieData = preload("res://data/zombies/lurcher.tres")
+const LURCHER_SHARE: float = 0.25
 
 var data: SiegeData = preload("res://data/siege/siege_data.tres")
 var game: Node
@@ -112,11 +115,13 @@ func start_night() -> void:
 
 func end_night() -> void:
 	_spawn_times.clear()
-	# The horde shambles off into the morning fog.
+	# The horde shambles off into the morning fog (and its dead are cleared, so corpses
+	# don't pile up night after night).
 	var gone := 0
 	for z in _horde:
-		if is_instance_valid(z) and z.state != Zombie.State.DEAD:
-			gone += 1
+		if is_instance_valid(z):
+			if z.state != Zombie.State.DEAD:
+				gone += 1
 			z.queue_free()
 	_horde.clear()
 	GameState.nights_survived += 1
@@ -213,13 +218,13 @@ func _spawn_horde_walker() -> void:
 		return
 	var at: Vector2 = (spawns[randi() % spawns.size()] as Node2D).global_position + Vector2(randf_range(-12, 12), randf_range(-12, 12))
 	var z: Zombie = WALKER.instantiate()
+	if randf() < LURCHER_SHARE:
+		z.data = LURCHER
 	z.position = at
 	z.siege_goal = _pick_window_goal(at)
 	actors.add_child(z)
 	z.add_to_group(&"horde")
 	z.died.connect(func() -> void: _night_kills += 1)
-	if game.has_method(&"_on_zombie_died"):
-		z.died.connect(game._on_zombie_died)
 	_horde.append(z)
 
 

@@ -51,9 +51,9 @@ func test_search_takes_time_then_opens_and_makes_noise() -> void:
 	check_eq(z.state, Zombie.State.INVESTIGATE, "a Walker 50 px away hears the 60 px rummaging")
 	z.queue_free()  # (it would turn round, see the player and attack - not what this test is about)
 	await physics_frames(5)
-	check_near(c.get_search_time(), 0.8, 0.001, "grocery shelf search time 0.8 s")
-	await physics_frames(30)
-	check(opened[0] == null and p.search_progress() > 0.5, "still searching at ~0.6 s")
+	check_near(c.get_search_time(), 0.5, 0.001, "grocery shelf search time 0.5 s (fun pass: faster)")
+	await physics_frames(16)
+	check(opened[0] == null and p.search_progress() > 0.5, "still searching at ~0.35 s")
 	await physics_frames(15)
 	check(opened[0] == c, "loot opened when the search completed")
 	check(GameState.is_rolled(&"test_box"), "contents rolled once")
@@ -178,8 +178,8 @@ func test_map_containers_pick_up_their_guarantees() -> void:
 	check(_total(c.open_contents()).get(&"bolt_cutters", 0) == 1, "opening it yields the bolt cutters")
 	var l: LootContainer = m.get_node("Containers/C_warehouse_office_locker")
 	check(_total(l.open_contents()).get(&"radio_part", 0) == 1, "office locker yields the radio component")
-	check_near(c.get_search_time(), 2.0, 0.001, "vehicle trunk search 2.0 s")
-	check_near(l.get_search_time(), 1.2, 0.001, "locker search 1.2 s")
+	check_near(c.get_search_time(), 1.2, 0.001, "vehicle trunk search 1.2 s")
+	check_near(l.get_search_time(), 0.7, 0.001, "locker search 0.7 s")
 	m.queue_free()
 
 

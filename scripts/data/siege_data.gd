@@ -5,9 +5,9 @@ extends Resource
 
 @export_group("Cycle")
 ## Daylight: scavenge. The clock runs 06:00 → 18:00 during this time.
-@export var day_length: float = 300.0
+@export var day_length: float = 150.0
 ## Dusk: get home and board up. 18:00 → 20:00. The horde starts moving at the end.
-@export var dusk_length: float = 45.0
+@export var dusk_length: float = 30.0
 ## Night: the siege. 20:00 → 05:00. Survive until dawn.
 @export var night_length: float = 150.0
 ## The ending (evacuation) needs the radio repaired and this many nights survived.

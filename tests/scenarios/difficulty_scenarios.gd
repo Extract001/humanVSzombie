@@ -19,7 +19,9 @@ var _baseline_ms: float = 0.0
 
 
 func _ready() -> void:
-	SaveSystem.path = "user://tool_save.json"  # never touch the player's real save
+	SaveSystem.path = "user://tool_save.json"
+	GameState.street_spawns_disabled = true  # fun pass: measure the placed/horde zombies only
+	GameState.records_disabled = true  # never touch the player's real save
 	await get_tree().process_frame
 	print("")
 	print("WALKER DIFFICULTY SCENARIOS  (Walker: chase 45 px/s, bite 12, wind-up 0.4 s; player walk 80 px/s)")

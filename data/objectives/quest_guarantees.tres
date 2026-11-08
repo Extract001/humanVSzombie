@@ -15,5 +15,5 @@ guarantees = {
 "pharmacy_cabinet_01": {"medkit": 1},
 "pharmacy_cabinet_02": {"bandage": 1},
 "vehicle_trunk_pickup_01": {"bolt_cutters": 1},
-"warehouse_office_locker": {"radio_part": 1, "ammo_shotgun": 8}
+"warehouse_office_locker": {"radio_part": 1}
 }

@@ -32,9 +32,8 @@ A top-down 2D zombie survival game made with **Godot 4.7.2** and **GDScript**.
 | Reload | R (also automatic when you fire an empty pistol) | ✅ |
 | Interact (doors, gates, containers, stash, bed, radio, objective board) | E, when the prompt appears (in reach and facing it) | ✅ |
 | Flashlight on/off | F | Phase 6 |
-| Weapons | 1 = bat, 2 = pistol, 3 = shotgun, mouse wheel cycles | ✅ |
+| Weapons | 1 = bat, 2 = pistol, mouse wheel cycles | ✅ |
 | Inventory (Use / Drop) | Tab / I | Phase 5 |
-| Workbench Upgrades | U (or at Safehouse Board / Dawn) | ✅ |
 | Pause (Resume / Settings / Controls / Main menu) | Esc | ✅ Phase 8 |
 
 The game starts in **fullscreen** and fills any screen shape (sharp pixels, no black bars); Settings → Fullscreen switches to a resizable window. Change keys in the game: **Settings → Controls** (saved). Graphics: **Settings → Flashlight shadows** off makes the flashlight cheaper on weak graphics chips (the beam then shines through walls; visual only). The FPS counter also shows memory use when you run from the editor (exported builds show FPS only).

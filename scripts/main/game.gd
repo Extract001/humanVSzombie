@@ -32,8 +32,6 @@ const SAFEHOUSE_RECT := Rect2(71 * 16, 65 * 16, 15 * 16, 13 * 16)
 var piles_root: Node2D
 var day_cycle: DayCycle
 var dawn_panel: CanvasLayer
-var upgrades_panel: UpgradesPanel
-var intro_panel: IntroPanel
 ## Fun pass
 var score_keeper: ScoreKeeper
 var population: Population
@@ -118,25 +116,7 @@ func _ready() -> void:
 		(station as SafehouseStation).used.connect(_on_station_used)
 	pause_menu.bind(self)
 	game_over.main_menu_requested.connect(go_to_main_menu)
-
-	upgrades_panel = UpgradesPanel.new()
-	upgrades_panel.name = "UpgradesPanel"
-	add_child(upgrades_panel)
-	upgrades_panel.bind(player)
-
-	intro_panel = IntroPanel.new()
-	intro_panel.name = "IntroPanel"
-	add_child(intro_panel)
-	intro_panel.bind(player)
-
-	dawn_panel.workbench_requested.connect(func() -> void:
-		dawn_panel.close()
-		upgrades_panel.open())
-	objectives_panel.workbench_requested.connect(func() -> void:
-		objectives_panel.close()
-		upgrades_panel.open())
-
-	for panel in [loot_panel, inventory_panel, stash_panel, objectives_panel, ending_panel, pause_menu, dawn_panel, upgrades_panel]:
+	for panel in [loot_panel, inventory_panel, stash_panel, objectives_panel, ending_panel, pause_menu, dawn_panel]:
 		panel.opened.connect(_update_ui_mode)
 		panel.closed.connect(_update_ui_mode)
 	_restore_from_save()
@@ -145,13 +125,6 @@ func _ready() -> void:
 	player.backpack_dropped.connect(func(id: StringName) -> void: _last_backpack = id)
 	player.died.connect(_on_player_died)
 	add_to_group(&"score_listeners")   # every zombie death (placed, street, horde) counts
-
-	_setup_street_atmosphere()
-	_spawn_lore_signs()
-
-	if DisplayServer.get_name() != "headless" and not GameState.has_unlock(&"intro_seen") \
-			and GameState.day == 1 and GameState.nights_survived == 0:
-		intro_panel.play_intro()
 	# The crosshair replaces the system cursor during play (not in tests/headless runs).
 	if DisplayServer.get_name() != "headless":
 		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
@@ -422,66 +395,3 @@ func _restore_from_save() -> void:
 	get_tree().call_group(&"hud", &"show_toast", ("Day %d" % GameState.day) if GameState.phase == GameState.Phase.DAY
 		else "Day %d. Dusk is falling: board up!" % GameState.day)
 
-
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo:
-		if event.physical_keycode == KEY_U and not player.is_dead():
-			if upgrades_panel.visible:
-				upgrades_panel.close()
-			elif not player.ui_open:
-				upgrades_panel.open()
-
-
-func _setup_street_atmosphere() -> void:
-	var particles := CPUParticles2D.new()
-	particles.name = "StreetAtmosphere"
-	particles.amount = 20
-	particles.lifetime = 6.0
-	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
-	particles.emission_rect_extents = Vector2(360, 220)
-	particles.direction = Vector2(1.0, 0.35).normalized()
-	particles.spread = 20.0
-	particles.initial_velocity_min = 25.0
-	particles.initial_velocity_max = 50.0
-	particles.gravity = Vector2(0, 5)
-	particles.scale_amount_min = 1.0
-	particles.scale_amount_max = 2.0
-	particles.color = Color(0.75, 0.7, 0.6, 0.28)
-	particles.z_index = 3
-	player.add_child(particles)
-
-
-func _spawn_lore_signs() -> void:
-	var signs_data := [
-		{
-			"pos": Vector2(1256, 1072),
-			"prompt": "Read survivor note",
-			"text": "SAFEHOUSE NOTICE: Front door holds. Reinforce the 3 windows with scrap planks!"
-		},
-		{
-			"pos": Vector2(390, 340),
-			"prompt": "Read warehouse warning",
-			"text": "SECURITY NOTICE: Shotgun & transmitter parts in office locker. Need bolt cutters for gate."
-		},
-		{
-			"pos": Vector2(1780, 520),
-			"prompt": "Read clinic board",
-			"text": "TRIAGE NOTICE: Bandages heal over time. Beware of fast Lurchers in dark rooms."
-		}
-	]
-	for s in signs_data:
-		var it := Area2D.new()
-		it.collision_layer = Interactable.LAYER
-		it.collision_mask = 0
-		it.set_script(load("res://scripts/components/interactable.gd"))
-		it.position = s.pos
-		var shape := CollisionShape2D.new()
-		var cs := CircleShape2D.new()
-		cs.radius = 18.0
-		shape.shape = cs
-		it.add_child(shape)
-		it.prompt = s.prompt
-		var note_text: String = s.text
-		it.interacted.connect(func(_by: Node) -> void:
-			get_tree().call_group(&"hud", &"show_toast", note_text))
-		world.add_child(it)

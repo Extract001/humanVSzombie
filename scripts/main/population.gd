@@ -9,7 +9,6 @@ extends Node
 
 const WALKER: PackedScene = preload("res://scenes/zombies/walker.tscn")
 const LURCHER: ZombieData = preload("res://data/zombies/lurcher.tres")
-const BRUTE: ZombieData = preload("res://data/zombies/brute.tres")
 const NEAR: float = 520.0
 const SPAWN_MIN: float = 380.0
 const SPAWN_MAX: float = 560.0
@@ -18,7 +17,6 @@ const DESPAWN: float = 950.0
 const BASE_TARGET: int = 10
 const MAX_TARGET: int = 18
 const LURCHER_CHANCE: float = 0.2
-const BRUTE_CHANCE: float = 0.1
 ## Share of spawns that come towards you straight away.
 const HUNTER_CHANCE: float = 0.5
 
@@ -85,10 +83,7 @@ func spawn_one() -> Zombie:
 		if on_mesh.distance_to(player.global_position) < lo - 20.0:
 			continue
 		var z: Zombie = WALKER.instantiate()
-		var roll: float = randf()
-		if GameState.nights_survived >= 1 and roll < BRUTE_CHANCE:
-			z.data = BRUTE
-		elif roll < LURCHER_CHANCE:
+		if randf() < LURCHER_CHANCE:
 			z.data = LURCHER
 		z.position = on_mesh
 		z.initial_facing = Vector2.RIGHT.rotated(randf() * TAU)

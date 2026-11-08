@@ -4,7 +4,6 @@ extends CanvasLayer
 
 signal opened
 signal closed
-signal workbench_requested
 
 var player: Player
 var _title: Label
@@ -30,19 +29,9 @@ func _ready() -> void:
 	_text.custom_minimum_size = Vector2(320, 0)
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(_text)
-
-	var btn_row := HBoxContainer.new()
-	btn_row.add_theme_constant_override(&"separation", 6)
-	box.add_child(btn_row)
-
-	var wb_btn: Button = UiKit.button("Workbench", func() -> void:
-		workbench_requested.emit())
-	wb_btn.name = "WorkbenchButton"
-	btn_row.add_child(wb_btn)
-
 	_button = UiKit.button("Continue", close)
 	_button.name = "Continue"
-	btn_row.add_child(_button)
+	box.add_child(_button)
 
 
 func bind(p: Player) -> void:

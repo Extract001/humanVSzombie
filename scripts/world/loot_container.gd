@@ -89,12 +89,6 @@ func get_prompt() -> String:
 func open_contents() -> Array:
 	if not is_pile:
 		GameState.roll_container(container_id, container_type, all_guaranteed_items())
-	if container_id == &"warehouse_office_locker" and not GameState.has_unlock(&"weapon_shotgun"):
-		var tree := get_tree()
-		if tree != null:
-			var p := tree.get_first_node_in_group(&"player") as Player
-			if p != null:
-				p.unlock_shotgun()
 	return contents()
 
 

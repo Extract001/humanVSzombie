@@ -84,8 +84,6 @@ func _ready() -> void:
 	health.setup(data.max_health)
 	health.died.connect(_on_died)
 	modulate = data.tint
-	if data.id == &"brute":
-		scale = Vector2(1.25, 1.25)
 	nav_agent.navigation_layers = 1 | NavigationBaker.WINDOW_NAV_LAYER  # Slice 1: may path through windows
 	nav_agent.link_reached.connect(_on_link_reached)
 	# Random start offsets so many zombies don't all think (or wander) on the same frame.
@@ -452,7 +450,7 @@ func _check_blocked_by_barricade(delta: float) -> void:
 		if b != null and not b.is_broken():
 			_barricade_hit_left = SIEGE.zombie_barricade_interval
 			facing = global_position.direction_to(b.center())
-			b.take_hit(SIEGE.zombie_barricade_damage, self)
+			b.take_hit(SIEGE.zombie_barricade_damage)
 			barricade_hit.emit(b)
 			return
 

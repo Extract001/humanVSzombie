@@ -102,15 +102,13 @@ func is_broken() -> bool:
 
 
 ## A Walker's hit. Returns true if this hit broke the last plank.
-func take_hit(amount: float, attacker: Node = null) -> bool:
+func take_hit(amount: float) -> bool:
 	if is_broken():
 		return false
 	GameState.barricades[barricade_id] = maxf(0.0, health() - amount)
 	_hit_flash = 0.25
 	AudioManager.play_at(preload("res://assets/audio/sfx/barricade_hit.wav"), center(), -2.0, 0.1)
 	Fx.burst(get_parent(), center(), Color(0.55, 0.39, 0.22), 4, 40.0, Vector2.ZERO)  # splinters
-	if GameState.has_upgrade(&"spikes") and attacker != null and attacker.has_node("Health"):
-		(attacker.get_node("Health") as HealthComponent).take_damage(15.0)
 	refresh()
 	if is_broken():
 		AudioManager.play_at(preload("res://assets/audio/sfx/barricade_break.wav"), center(), 0.0)

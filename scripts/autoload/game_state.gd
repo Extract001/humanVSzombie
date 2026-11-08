@@ -50,9 +50,6 @@ var restocks: Dictionary = {}
 ## Fun pass: this run's score (kills × streak, loot, nights, objectives).
 signal score_changed(score: int)
 var score: int = 0
-## Survivor upgrades/perks crafted at the safehouse workbench using scrap metal.
-signal upgrades_changed
-var upgrades: Array[StringName] = []
 ## Tests, bots and tools: no random street spawns, never write your best score.
 var street_spawns_disabled: bool = false
 var records_disabled: bool = false
@@ -79,7 +76,6 @@ func new_game(seed_value: int = -1) -> void:
 	barricades = {}
 	restocks = {}
 	score = 0
-	upgrades.clear()
 	_next_pile = 1
 	piles_changed.emit()
 
@@ -335,7 +331,6 @@ func to_dict() -> Dictionary:
 		"barricades": _string_keys(barricades),
 		"restocks": _string_keys(restocks),
 		"score": score,
-		"upgrades": upgrades.map(func(u: StringName) -> String: return String(u)),
 	}
 
 
@@ -390,23 +385,8 @@ func from_dict(d: Dictionary) -> void:
 	var rs: Dictionary = d.get("restocks", {})
 	for id in rs:
 		restocks[StringName(id)] = int(rs[id])
-	upgrades.clear()
-	for u in d.get("upgrades", []):
-		upgrades.append(StringName(u))
 	piles_changed.emit()
 	stash_changed.emit()
-	upgrades_changed.emit()
-
-
-func has_upgrade(id: StringName) -> bool:
-	return upgrades.has(id)
-
-
-func add_upgrade(id: StringName) -> void:
-	if upgrades.has(id):
-		return
-	upgrades.append(id)
-	upgrades_changed.emit()
 
 
 static func _string_keys(d: Dictionary) -> Dictionary:

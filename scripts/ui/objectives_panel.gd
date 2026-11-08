@@ -3,7 +3,6 @@ extends CanvasLayer
 
 signal opened
 signal closed
-signal workbench_requested
 
 var tracker: ObjectiveTracker
 var player: Player
@@ -23,11 +22,7 @@ func _ready() -> void:
 	_text.custom_minimum_size = Vector2(330, 150)
 	_text.add_theme_color_override(&"default_color", UiKit.TEXT)
 	box.add_child(_text)
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override(&"separation", 6)
-	box.add_child(row)
-	row.add_child(UiKit.button("Workbench", func() -> void: workbench_requested.emit()))
-	row.add_child(UiKit.button("Close [E]", close))
+	box.add_child(UiKit.button("Close [E]", close))
 
 
 func bind(p: Player, t: ObjectiveTracker) -> void:

@@ -107,6 +107,8 @@ func _ready() -> void:
 	sprite.play(&"idle_down")
 	flashlight.enabled = false
 	sprite.frame_changed.connect(_on_sprite_frame_changed)
+	_apply_graphics_settings()
+	Settings.changed.connect(_apply_graphics_settings)
 
 
 func _physics_process(delta: float) -> void:
@@ -495,6 +497,11 @@ func flashlight_charge_ratio() -> float:
 
 
 ## F key. Returns the new on/off state.
+## Phase 11: the "Flashlight shadows" setting (visual only).
+func _apply_graphics_settings() -> void:
+	flashlight.shadow_enabled = Settings.flashlight_shadows
+
+
 func toggle_flashlight() -> bool:
 	return set_flashlight(not flashlight_on)
 

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Phase 11 — Optimisation & QA (2026-11-08) — IMPLEMENTED + TESTED (automated); not yet VERIFIED
+- **Playthrough bot** (`tests/scenarios/playthrough_bot.tscn`): plays the whole game from a new game to the ending by walking the real map (doors, searches, stash, gate, radio) on 5 world seeds; plus a report-only run with the Walkers. All 5 seeds reach the ending. Now part of every `validate.bat` / `validate.sh` run.
+- **Memory soak test** (`tests/perf/soak_test.tscn`): 12 full sessions + a 5-minute session; no leaks found (0 orphan nodes, identical object counts, flat node count). Part of every validation run.
+- **Profiling:** game logic for 40 Walkers costs 0.8 ms per frame; rendering is the real cost (per-part breakdown in TECHNICAL_ARCHITECTURE §5). No AI, difficulty or gameplay values changed (scenarios S1–S6 identical).
+- **New setting: Flashlight shadows** (Settings → Sound & display). Off = cheaper flashlight on weak graphics chips; the beam then shines through walls. Visual only. On by default.
+- **FPS counter** also shows memory (`MEM n MB`) when run from the editor, for long play sessions.
+- **`validate.bat perf` reworked** for the 30 FPS investigation (about 6 minutes): records your graphics chips, screen refresh rate and power plan (`perf_system.txt`); full benchmark (`perf_benchmark_opengl3.txt`, now with "Flashlight shadows off" rows); quick benchmark with the **ANGLE / Direct3D 11** driver (`perf_benchmark_opengl3_angle_quick.txt`); first-use stutter check (`perf_hitches.txt`). The old `perf_benchmark.txt` name is no longer written.
+- Benchmark: `-- --quick` option; results file named after the graphics driver.
+- QA checklist: Phase 11 results and a **one-session Windows QA pass** (about 45 minutes) that covers every open play-test from Phases 4–10.
+- `validate.bat` / `validate.sh`: 4 steps now (import, tests, playthrough + soak, render).
+- Tests: 152 (was 151): Flashlight shadows setting.
+
 ### Git (2026-11-08)
 - Local repository created by the owner; first commit `ee5ad69` "LAST SIGNAL: Phases 0-10" (362 files) pushed to GitHub `Extract001/humanVSzombie`, branch `main`.
 - `.gitignore`: added `__pycache__/` and `*.pyc` (asset generator scripts).

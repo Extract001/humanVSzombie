@@ -200,6 +200,7 @@ Random loot can never block the main objective chain. Quest-critical items don't
   - `validate_on_load` respawns a missing quest item
 
 ### 4.8c UI & settings (implemented Phase 8)
+Phase 11: **Flashlight shadows** setting (`display/flashlight_shadows` in settings.cfg, default on). Off = `Flashlight.shadow_enabled = false` (cheaper; beam shines through walls). Visual only: zombie sight uses raycasts and is unaffected. The HUD FPS counter adds `MEM n MB` when the engine reports static memory (editor/debug runs).
 - Start scene: `scenes/ui/main_menu.tscn`. New game → `GameState.new_game()` → `game.tscn`. Continue is disabled until saving exists (Phase 10).
 - Look: one project theme (`assets/ui/theme.tres`, built by the generator) with an original 5×7 image font (`assets/fonts/last_signal_pixel.png`, size 10 = 1:1, 20 = 2× for titles via the `TitleLabel` type variation).
 - `Settings` autoload: master/effects volume (audio buses Master + SFX, `default_bus_layout.tres`; AudioManager plays on SFX), fullscreen, V-Sync, FPS counter, key rebinding. Saved in `user://settings.cfg` (ConfigFile; only changed bindings are stored). Rebinding a key that another action uses swaps the two. The test runner resets bindings to the defaults in memory.
@@ -270,6 +271,20 @@ Only `[WIN-PLAY]` + `[VISUAL]` passes, confirmed by you, move a feature to **VER
 - `godot --headless --export-release "Web" export/web/index.html`, then served locally and loaded in a headless browser. The test looks for a "READY" line the game prints to the browser console.
 - You then open the same build in Chrome/Edge on Windows (instructions given per phase).
 
+**Phase 11 QA tools** (all under `tests/`, excluded from exports):
+- `tests/scenarios/playthrough_bot.tscn`: a bot plays from a new game to the ending by **walking** the real map (movement input along navigation paths, collisions on, doors opened with E, real searches, stash and radio). Mode A, pass/fail: no Walkers, 5 world seeds. Mode B, report only: normal Walkers, can't die, fights with bat and shove; records bites and kills. Run by `validate.sh` / `validate.bat` every time.
+- `tests/perf/soak_test.tscn`: 12 full sessions (menu, new game, shots, effects, death, respawn, save, Continue) and one 5-minute session; fails if objects, nodes or memory keep growing or orphan nodes remain. Run every time.
+- `tests/perf/perf_benchmark.tscn` (`validate.bat perf`): FPS and frame times; `-- --quick` = V-Sync OFF rows only. Output file named after the graphics driver (`perf_benchmark_opengl3.txt`, `perf_benchmark_opengl3_angle_quick.txt`). Includes the "Flashlight shadows" OFF rows.
+- `tests/perf/hitch_probe.tscn`: one-time stutters the first time the flashlight, a shot, an effect or a menu appears (each action twice).
+- `tests/perf/render_breakdown.tscn` and `tests/perf/cpu_probe.tscn`: Claude's profiling helpers (render cost per scene part; game-logic cost by wall clock).
+
+**Phase 11 measurements** `[LINUX-AUTO]`, 2-thread Xeon, software OpenGL (llvmpipe) — relative numbers only, not your PC:
+- Game logic (physics + AI + scripts), wall clock, headless: **0.8 ms per frame with 40 Walkers** chasing in Ashford Lane, 1.9 ms with 80. Not a bottleneck, so the AI was not changed. (Note: the engine's `TIME_PHYSICS_PROCESS` monitor reads much higher than the wall clock in headless runs, so the benchmark's "phys+AI" column is only a rough guide.)
+- Rendering is the cost. Switching parts of the real map off one at a time (warehouse view, software rendering): ground layer about 6.6 ms of 10, dark-zone lights about 3 ms, HUD about 2 ms, zombies, roofs, wall occluders and effects each under 0.5 ms. The flashlight adds about 6 ms with shadows and about 3 ms without them.
+- No one-time stutters found on first flashlight, shot, blood, inventory or pause (all within normal frame-time noise in software rendering; to be confirmed on your GPU by `perf_hitches.txt`).
+- Memory: 0 orphan nodes; objects and nodes return to exactly the same count after every full session (12 cycles); a 5-minute session keeps a flat node count.
+- **30 FPS on your laptop:** not reproducible here (software rendering, no V-Sync). Candidates, in the order `validate.bat perf` checks them: V-Sync on a screen where frames take slightly longer than 16.7 ms (V-Sync OFF rows), the slow OpenGL driver of some laptop graphics chips (ANGLE / Direct3D 11 rows: if ANGLE is clearly faster, Phase 11b sets `rendering/gl_compatibility/driver.windows = "opengl3_angle"`), the game running on the integrated instead of the dedicated GPU, a 30 Hz screen mode, battery-saver power plan, or running from the editor (`perf_system.txt` records these).
+
 ## 6. Performance budget (target: your Ryzen 5 5600H / 8 GB, plus a mid-range browser)
 
 - 60 FPS with 40 active zombies on screen-adjacent areas.
@@ -286,7 +301,7 @@ Only `[WIN-PLAY]` + `[VISUAL]` passes, confirmed by you, move a feature to **VER
 | Web saves (IndexedDB) can be cleared by the browser | Low-Med | Document it. Optional export/import save string later. |
 | Web audio needs a user click before sound plays | Low | The main menu "click to start" naturally unlocks audio. |
 | Navigation with doors that open/close | Medium | Doors are obstacles; zombies path *to* doors and bang on them (Brute breaks). Rebake avoided. |
-| Many zombies plus raycasts | Medium | Tick staggering, distance culling, dormant mode (4.5). Profiler pass in Phase 3 and Phase 11. |
+| Many zombies plus raycasts | Low (measured Phase 11: 0.8 ms per frame for 40 Walkers) | Tick staggering, distance culling, dormant mode (4.5). Profiler pass in Phase 3 and Phase 11. |
 | Scope creep | High | GDD §15 scope list. New ideas go to a "Later" list, not the current phase. |
 | Git in the shared folder: my workspace can't delete files there by default, and Git needs that internally | Low | **Owner decision:** no broad delete permission. You run `git init` / `git commit` yourself on Windows using commands I provide; I never run destructive Git commands (reset, clean, checkout over files). |
 | Linux tests passing ≠ Windows/browser working | Medium | Five labelled test categories (§5). Nothing is VERIFIED without your Windows + visual check. |

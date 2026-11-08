@@ -38,6 +38,7 @@ func _ready() -> void:
 	add_to_group(&"hud")
 	prompt_label.visible = false
 	toast_label.modulate.a = 0.0
+	fps_label.grow_horizontal = Control.GROW_DIRECTION_BEGIN  # longer text ("MEM ...") grows to the left
 
 
 func bind(player: Player) -> void:
@@ -219,7 +220,11 @@ func set_kills(kills: int) -> void:
 
 func _process(delta: float) -> void:
 	fps_label.visible = Settings.show_fps
-	fps_label.text = "FPS %d" % Engine.get_frames_per_second()
+	if fps_label.visible:
+		# Phase 11: memory next to the FPS for long play sessions (only reported by debug/editor runs).
+		var mem_mb: float = OS.get_static_memory_usage() / 1048576.0
+		fps_label.text = ("FPS %d  MEM %d MB" % [Engine.get_frames_per_second(), roundi(mem_mb)]) if mem_mb > 0.0 \
+			else "FPS %d" % Engine.get_frames_per_second()
 	if _player == null:
 		return
 	dark_label.visible = _player.in_darkness

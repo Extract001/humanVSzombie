@@ -173,3 +173,26 @@ func test_death_screen_stats_and_fps_setting() -> void:
 	check(not game.get_node("HUD").fps_label.visible, "FPS counter follows the setting")
 	Settings.show_fps = true
 	game.queue_free()
+
+
+## Phase 11: "Flashlight shadows" graphics setting: applied to the player at once, saved, and visual only.
+func test_flashlight_shadows_setting() -> void:
+	var old_path: String = Settings.config_path
+	Settings.config_path = TEST_CFG
+	var game := _game()
+	await physics_frames(3)
+	var p: Player = game.get_node("World/Actors/Player")
+	check(p.flashlight.shadow_enabled, "shadows on by default")
+	Settings.flashlight_shadows = false
+	Settings.apply()
+	check(not p.flashlight.shadow_enabled, "switching the setting off removes the beam's shadows at once")
+	Settings.save_settings()
+	Settings.flashlight_shadows = true
+	Settings.load_settings()
+	check(not Settings.flashlight_shadows, "setting is saved and loaded")
+	Settings.flashlight_shadows = true
+	Settings.apply()
+	check(p.flashlight.shadow_enabled, "back on")
+	game.queue_free()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_CFG))
+	Settings.config_path = old_path

@@ -256,8 +256,34 @@ Mark each: ✅ pass · ❌ fail (write the bug) · ⏳ not yet testable. A featu
 - [ ] `[WEB-EXPORT]` Same after closing the tab and reopening the game URL
 - [ ] `[WEB-EXPORT]` If browser storage is unavailable or full (e.g. some private/incognito modes), saving fails gracefully: a clear "progress could not be saved" message, no crash
 
-## Phases 11–12 — Release
-- [ ] `[WIN-PLAY]` 30-minute session with no crash and no memory growth trend
+## Phase 11 — Optimisation & QA
+*Automated results (2026-11-08):* `[LINUX-AUTO]` 152/152 + both render tests + playthrough bot + memory soak, VALIDATION PASSED. Difficulty scenarios S1–S6 unchanged (no AI or value changes). `[WEB-EXPORT]` headless Chrome: settings screen, new game, walking, flashlight on/off, pistol shot; 0 errors, 0 page errors (FPS 3–11 in Claude's software-rendered browser: not meaningful for real browsers).
+- [x] ✅ `[LINUX-AUTO]` **Playthrough bot:** walks the real map from a new game to the ending (Stock up → First aid → Cut the lock → Signal parts → Last signal) on 5 world seeds, opening doors with E and searching containers: all 5 reach the ending (about 2.4 min of game time each). No stuck spots, no unreachable quest container
+- [x] ✅ `[LINUX-AUTO]` Same bot with the normal Walkers (report only; the player can't die, simple bat + shove fighting): reached the ending, 0–8 bites, 6–11 kills over the runs so far
+- [x] ✅ `[LINUX-AUTO]` **Memory soak:** 12 full sessions (menu, new game, shots, effects, death, respawn, save, Continue): object, node and resource counts identical after every session, 0 orphan nodes, memory +0.02 MB per session; a 5-minute session of shooting, shoving and flashlight use keeps a flat node count
+- [x] ✅ `[LINUX-AUTO]` CPU: game logic for 40 Walkers in Ashford Lane = 0.8 ms per frame (wall clock), 80 Walkers = 1.9 ms. Rendering is the only real cost (breakdown in TECHNICAL_ARCHITECTURE §5)
+- [x] ✅ `[LINUX-AUTO]` No one-time stutters on first flashlight, shot, blood, inventory or pause in software rendering (to be confirmed on your GPU)
+- [x] ✅ `[LINUX-AUTO]` New setting **Flashlight shadows** (off = cheaper): applied at once, saved, visual only; in software rendering it halves the flashlight's cost (+6 ms → +3 ms)
+- [ ] ⏳ `[WIN-AUTO]` `validate.bat` → ALL TESTS PASSED (152), PLAYTHROUGH PASSED, SOAK TEST PASSED, VALIDATION PASSED (**one window only**)
+- [ ] ⏳ `[WIN-AUTO]` `validate.bat perf` → send `logs\perf_system.txt`, `perf_benchmark_opengl3.txt`, `perf_benchmark_opengl3_angle_quick.txt`, `perf_hitches.txt` (this decides the 30 FPS fix)
+- [ ] ⏳ `[VISUAL]` Settings → "Flashlight shadows" off: the beam still works (now also through walls); FPS in the warehouse with the light on, shadows on vs off
+
+### Windows QA pass — one session (about 45 minutes)
+This one session covers every open `[WIN-PLAY]` item from Phases 4–10. Play from the editor (F5) with the FPS counter on; note FPS and memory (top right) at the start and the end. Mark each step ✅/❌ and write down anything odd.
+1. **Menu & settings:** every button on the main menu; Settings → change volumes, Fullscreen, V-Sync off (note FPS later), Flashlight shadows; Controls → rebind Reload to T. Close the game, start it again: T still reloads, volumes kept.
+2. **New game → street:** walk out of the safehouse, past a zombie's back (walking doesn't alert it; running does; faint ring when running). Roofs fade when you enter buildings; no getting stuck on walls, cars, shelves or doorways.
+3. **Grocery + houses:** search shelves (bar, moving cancels, loot panel Take / Take all / Close); reopen a searched shelf (same items, "(empty)" darker look); fill the bag with scrap ("Bag full"). Inventory (Tab/I): descriptions, drop and pick back up.
+4. **Home:** walking in says "Game saved". Stash: store food and water → Stock up done, next objective appears (HUD and board).
+5. **Pharmacy:** go by the back alley this time; storeroom darkness never darkens the street; flashlight FPS on vs off. Get bitten, use a bandage (health rises over 3 s). First aid done.
+6. **Death test:** let zombies kill you outside with items in the bag. Death screen; close the game from it. Start again → Continue → you wake at the bed with 75 HP; walk to your backpack and take everything back.
+7. **Pickup truck → gate:** bolt cutters (can't be dropped); cut the warehouse gate (loud, zombies come); a gunshot pulls zombies from nearby streets.
+8. **Warehouse:** dark; find the radio component with the flashlight; battery runs down and a battery swaps in.
+9. **Home → bed → radio:** sleep after being bitten (full health, Day 2; refused with a zombie at the door). Repair the radio, read the broadcast.
+10. **Pause & quit:** Esc pauses (zombies and timers stop). Quit to the menu from the safehouse, Continue: stash, objectives, looted containers and backpacks all as you left them.
+11. **End:** note FPS and memory again. Memory should be about the same as at the start (a little higher is normal). Send Claude the notes and `logs\validate.log` / any errors from the Output panel.
+
+## Phase 12 — Release
+- [ ] `[WIN-PLAY]` 30-minute session with no crash and no memory growth trend (FPS counter shows memory when run from the editor)
 - [ ] `[WIN-PLAY]` Windows .exe runs on a clean machine (no Godot installed)
 - [ ] `[WEB-EXPORT]` Web build runs from itch.io in Chrome, Firefox and Edge
 - [ ] `[VISUAL]` No placeholder art left in the release build

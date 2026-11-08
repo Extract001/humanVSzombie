@@ -10,6 +10,7 @@ var _sfx: HSlider
 var _music: HSlider
 var _fullscreen: CheckButton
 var _vsync: CheckButton
+var _shadows: CheckButton
 var _fps: CheckButton
 var _bind_buttons: Dictionary = {}   ## action -> Button
 var _waiting_for: StringName = &""   ## action being rebound, or empty
@@ -36,12 +37,14 @@ func _ready() -> void:
 	_fullscreen = _check(general, "Fullscreen")
 	_vsync = _check(general, "V-Sync (off can raise FPS, may tear)")
 	_fps = _check(general, "Show FPS counter")
+	_shadows = _check(general, "Flashlight shadows (off = faster)")
 	_master.value_changed.connect(func(v: float) -> void: Settings.master_volume = v / 100.0; _save())
 	_sfx.value_changed.connect(func(v: float) -> void: Settings.sfx_volume = v / 100.0; _save())
 	_music.value_changed.connect(func(v: float) -> void: Settings.music_volume = v / 100.0; _save())
 	_fullscreen.toggled.connect(func(on: bool) -> void: Settings.set_fullscreen(on))
 	_vsync.toggled.connect(func(on: bool) -> void: Settings.vsync = on; _save())
 	_fps.toggled.connect(func(on: bool) -> void: Settings.show_fps = on; _save())
+	_shadows.toggled.connect(func(on: bool) -> void: Settings.flashlight_shadows = on; _save())
 
 	var controls := VBoxContainer.new()
 	controls.name = "Controls"
@@ -93,6 +96,7 @@ func refresh() -> void:
 	_fullscreen.set_pressed_no_signal(Settings.fullscreen)
 	_vsync.set_pressed_no_signal(Settings.vsync)
 	_fps.set_pressed_no_signal(Settings.show_fps)
+	_shadows.set_pressed_no_signal(Settings.flashlight_shadows)
 	for action in _bind_buttons:
 		var b: Button = _bind_buttons[action]
 		b.text = "Press a key..." if action == _waiting_for else Settings.event_text(Settings.primary_event(action))

@@ -22,6 +22,9 @@ var music_volume: float = 0.8    ## 0..1
 var fullscreen: bool = false
 var vsync: bool = true
 var show_fps: bool = true
+## Flashlight shadows (walls block the beam). Off = faster on weak graphics chips; the beam then
+## shines through walls. Visual only: zombies still can't see through walls either way.
+var flashlight_shadows: bool = true
 
 ## The project's default bindings (copied at startup, before anything is changed).
 var _defaults: Dictionary = {}
@@ -46,6 +49,7 @@ func load_settings(path: String = config_path) -> void:
 	fullscreen = bool(cfg.get_value("display", "fullscreen", fullscreen))
 	vsync = bool(cfg.get_value("display", "vsync", vsync))
 	show_fps = bool(cfg.get_value("display", "show_fps", show_fps))
+	flashlight_shadows = bool(cfg.get_value("display", "flashlight_shadows", flashlight_shadows))
 	for a in REBINDABLE:
 		if not cfg.has_section_key("controls", String(a[0])):
 			continue
@@ -62,6 +66,7 @@ func save_settings(path: String = config_path) -> void:
 	cfg.set_value("display", "fullscreen", fullscreen)
 	cfg.set_value("display", "vsync", vsync)
 	cfg.set_value("display", "show_fps", show_fps)
+	cfg.set_value("display", "flashlight_shadows", flashlight_shadows)
 	for a in REBINDABLE:
 		var ev: InputEvent = primary_event(a[0])
 		if ev != null and not _same(ev, _default_primary(a[0])):

@@ -21,6 +21,7 @@
 8. Label every test result `[LINUX-AUTO]`, `[WIN-AUTO]`, `[WIN-PLAY]`, `[WEB-EXPORT]` or `[VISUAL]`. Linux results (headless or software-GL renders) are never presented as proof of Windows, browser or visual correctness.
 9. Git: the owner runs commits on Windows. Never run `git reset`, `git clean`, `git checkout -- <file>`, force-push, or delete or overwrite existing files without explicit owner approval. Don't request broad delete permissions just for Git.
 10. Don't start a new phase until the owner explicitly approves it.
+11. Every validation run includes the playthrough bot (whole game to the ending, 5 seeds) and the memory soak test (Phase 11). A level or quest change that breaks the bot is a bug, not a test to loosen.
 
 ## Code style
 - `snake_case` files/functions/variables, `PascalCase` classes/nodes, `UPPER_CASE` constants.

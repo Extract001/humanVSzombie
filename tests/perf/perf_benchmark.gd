@@ -21,11 +21,14 @@ const YARD_SPOT := Vector2(30 * 16, 20 * 16)     # middle of the road, open area
 const DARK_SPOT := Vector2(47 * 16, 32 * 16)     # inside the dark room
 
 var _lines: PackedStringArray = []
+## "-- --quick" (Phase 11): only the V-Sync OFF rows, for comparing graphics drivers quickly.
+var _quick: bool = false
 var _vp: RID
 
 
 func _ready() -> void:
 	SaveSystem.path = "user://tool_save.json"  # never touch the player's real save
+	_quick = OS.get_cmdline_user_args().has("--quick")
 	_vp = get_viewport().get_viewport_rid()
 	RenderingServer.viewport_set_measure_render_time(_vp, true)
 	_out("LAST SIGNAL performance benchmark  %s" % Time.get_datetime_string_from_system())
@@ -42,7 +45,9 @@ func _ready() -> void:
 	_out("%-10s %-5s %-6s | %6s %7s %7s | %7s %7s %7s | %5s %5s" % ["place", "vsync", "walkrs",
 		"FPS", "avg ms", "worst", "phys+AI", "rendCPU", "rendGPU", "draws", "objs"])
 	_out("-".repeat(100))
-	for vsync in [false, true]:
+	if _quick:
+		_out("QUICK run: V-Sync OFF rows only")
+	for vsync in ([false] if _quick else [false, true]):
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vsync else DisplayServer.VSYNC_DISABLED)
 		for place in ["yard", "dark room"]:
 			for n in COUNTS:
@@ -54,7 +59,7 @@ func _ready() -> void:
 	await _measure("dark room", 40, false, false)
 	_out("")
 	_out("Real game scene (Ashford Lane, all its Walkers awake and chasing), V-Sync OFF / ON:")
-	for vs in [false, true]:
+	for vs in ([false] if _quick else [false, true]):
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vs else DisplayServer.VSYNC_DISABLED)
 		for spot in [["street", Vector2(78.5, 58.5)], ["pharmacy", Vector2(18.5, 50.5)], ["grocery", Vector2(62.5, 44.5)]]:
 			await _measure_game(spot[0], spot[1] * 16.0, vs)
@@ -65,6 +70,13 @@ func _ready() -> void:
 	for spot in [["warehouse", Vector2(21.5, 8.5)], ["street", Vector2(78.5, 58.5)]]:
 		for fl in [false, true]:
 			await _measure_game(spot[0].substr(0, 7) + (" +L" if fl else " -L"), spot[1] * 16.0, false, fl)
+	# Phase 11: the "Flashlight shadows" setting switched off (beam without wall shadows).
+	var keep: bool = Settings.flashlight_shadows
+	Settings.flashlight_shadows = false
+	for spot in [["warehouse", Vector2(21.5, 8.5)], ["street", Vector2(78.5, 58.5)]]:
+		await _measure_game(spot[0].substr(0, 5) + "+L-sh", spot[1] * 16.0, false, true)
+	Settings.flashlight_shadows = keep
+	_out("(+L-sh = flashlight on, \"Flashlight shadows\" setting OFF)")
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED)
 	_out("")
 	_out("Columns: FPS = frames per second; avg/worst = real time per frame (ms);")
@@ -220,7 +232,8 @@ func _save() -> void:
 	if OS.has_feature("template"):
 		dir = OS.get_user_data_dir()
 	DirAccess.make_dir_recursive_absolute(dir)
-	var f := FileAccess.open(dir.path_join("perf_benchmark.txt"), FileAccess.WRITE)
+	var fname: String = "perf_benchmark_%s%s.txt" % [RenderingServer.get_current_rendering_driver_name(), "_quick" if _quick else ""]
+	var f := FileAccess.open(dir.path_join(fname), FileAccess.WRITE)
 	if f != null:
 		f.store_string("\n".join(_lines) + "\n")
-		print("Saved: ", dir.path_join("perf_benchmark.txt"))
+		print("Saved: ", dir.path_join(fname))

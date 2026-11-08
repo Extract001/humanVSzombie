@@ -2,7 +2,7 @@
 
 A top-down 2D zombie survival game made with **Godot 4.7.2** and **GDScript**.
 
-> Status: **Phase 10 — Save system.** Phases 4–10 are IMPLEMENTED and TESTED by automated checks (Linux + automated browser test) and wait for your Windows play-tests. Phase 2 VERIFIED. Phase 3 behaviour passed but **not VERIFIED** (30 FPS performance issue still open: please run `validate.bat perf` and try V-Sync off in Settings). All art, sound and music is original, made from code (`tools/asset_generators/`).
+> Status: **Phase 11 — Optimisation & QA.** Phases 4–11 are IMPLEMENTED and TESTED by automated checks (Linux + automated browser test) and wait for your Windows play-tests. Phase 2 VERIFIED. Phase 3 behaviour passed but **not VERIFIED** (30 FPS on your laptop, cause not found yet: please run `validate.bat perf` once — it now also tries the ANGLE graphics driver and records your graphics chips, screen refresh rate and power plan). All art, sound and music is original, made from code (`tools/asset_generators/`).
 
 ## Requirements
 - Godot 4.7.2-stable, Standard edition (installed at `C:\Al-am\Game_engine\`)
@@ -34,15 +34,16 @@ A top-down 2D zombie survival game made with **Godot 4.7.2** and **GDScript**.
 | Inventory (Use / Drop) | Tab / I | Phase 5 |
 | Pause (Resume / Settings / Controls / Main menu) | Esc | ✅ Phase 8 |
 
-Change keys in Godot: **Project → Project Settings → Input Map** tab.
+Change keys in the game: **Settings → Controls** (saved). Graphics: **Settings → Flashlight shadows** off makes the flashlight cheaper on weak graphics chips (the beam then shines through walls; visual only). The FPS counter also shows memory use when you run from the editor (exported builds show FPS only).
 
 ## Checking the project
 
 | What | How | Category |
 |------|-----|----------|
-| Automated checks on **your Windows** Godot | Double-click `tools\validate.bat`. Wait for `VALIDATION PASSED` or `FAILED`. The log is saved to `logs\validate.log` | `[WIN-AUTO]` |
+| Automated checks on **your Windows** Godot | Double-click `tools\validate.bat` (about 1 minute; **run only one at a time**). It imports the project, runs the test suite, lets a bot play the whole game to the ending on 5 world seeds, and runs a memory soak test. Wait for `VALIDATION PASSED` or `FAILED`. The log is saved to `logs\validate.log` | `[WIN-AUTO]` |
 | Same, plus the darkness render test (a window opens briefly) | Open Command Prompt in `tools\` and run `validate.bat render` | `[WIN-AUTO]` |
 | Browser build | Double-click `tools\serve_web.bat`. It opens `http://localhost:8060/index.html?perf` in your browser | `[WEB-EXPORT]` |
+| Performance check (about 6 minutes; charger plugged in, Godot editor closed) | Command Prompt in `tools\` → `validate.bat perf`. Send Claude the four files it lists from `logs\` (`perf_system.txt`, `perf_benchmark_opengl3.txt`, `perf_benchmark_opengl3_angle_quick.txt`, `perf_hitches.txt`) | `[WIN-AUTO]` |
 | Walker difficulty scenarios S1–S6 + 40-zombie performance | Command Prompt in `tools\` → `validate.bat scenarios` (about 20 s; prints a results table) | `[WIN-AUTO]` |
 | Play the six difficulty arenas yourself | In Godot's FileSystem panel open `scenes/debug/arena_playground.tscn`, press **F6** (Run Current Scene). In the game press **F1–F6** to switch arenas | `[WIN-PLAY]` |
 | Linux automated checks (Claude) | `tools/validate.sh --render --scenarios` | `[LINUX-AUTO]` |

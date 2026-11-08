@@ -6,7 +6,7 @@ A top-down 2D zombie survival game made with **Godot 4.7.2** and **GDScript**.
 
 ## Requirements
 - Godot 4.7.2-stable, Standard edition (installed at `C:\Al-am\Game_engine\`)
-- Git (recommended)
+- Git (installed; see "Git" below)
 - Python (only for `tools\serve_web.bat`; optional)
 
 ## Opening and playing the project
@@ -63,38 +63,21 @@ documentation/
 ```
 **Tweaking values without code:** in the Godot **FileSystem** panel (bottom left), double-click `data/player/player_stats.tres` or `data/zombies/walker.tres`. The numbers appear in the **Inspector** (right side). Change them and press F5.
 
-## Git setup (you run these once, on Windows)
+## Git (set up 2026-11-08)
+The project is a local Git repository on branch `main`, connected to GitHub: https://github.com/Extract001/humanVSzombie (first commit `ee5ad69`, "LAST SIGNAL: Phases 0-10").
+`export/`, `logs/` and `.godot/` are ignored and never uploaded.
 
-**1. Check Git is installed.** Open **Command Prompt** (Start menu → type `cmd` → Enter) and run:
+**Saving your work after each phase** (PowerShell):
 ```
-git --version
-```
-Expected: something like `git version 2.4x.x.windows.1`.
-If you get *"'git' is not recognized"*, install **Git for Windows** from https://git-scm.com/download/win (free; default options are fine), then close and reopen Command Prompt.
-
-**2. Create the repository with two commits (Phase 0 documents first, then the Phase 1 prototype):**
-```
-cd /d C:\Al-am\Game_development
-git init -b main
-git config user.name "Extract001"
-git config user.email "hunarali912@gmail.com"
-git add README.md CLAUDE.md CHANGELOG.md ASSET_LICENSES.md .gitignore .gitattributes documentation
-git commit -m "Phase 0: planning documents v0.3"
+cd C:\Al-am\Game_development
 git add .
 git status
-git commit -m "Phases 1-4: prototype, combat, zombie AI, Ashford Lane"
-git log --oneline
+git commit -m "Phase 11: short description"
+git push
 ```
-Expected: `git log --oneline` shows two commits. `git status` before the second commit lists the new project files; `export/`, `logs/` and `.godot/` should **not** appear (they're ignored).
-Line-ending warnings (`LF will be replaced by CRLF`) are harmless.
-*(This README already describes Phase 1. It's in the first commit because the file also holds the Git instructions.)*
-
-**3. Later, to connect GitHub** (not now):
-```
-git remote add origin https://github.com/Extract001/humanVSzombie.git
-git push -u origin main
-```
-Check that the repository is set to **Private** on GitHub first if you don't want it public.
+Check `git status` before committing: only project files should be listed.
+If `git push` says *"Could not resolve host: github.com"*, your internet/DNS dropped out: reconnect and run `git push` again.
+If it says *rejected*, stop and ask: never use `--force`.
 
 ## Documentation
 - [Game Design Document](documentation/GDD.md)

@@ -110,7 +110,7 @@ Scripted "player bots" use simple fixed behaviour (walk away / shove when adjace
 **Honest limitation:** I can make clean, consistent *simple* pixel art with code, good enough for a readable prototype and possibly a stylised minimal look. I can't produce hand-animated, detailed gritty pixel art at commercial quality. Phase 9 needs a decision between options A, B and C. I'll present real candidates with their licences when we get there.
 
 ## Git workflow (owner decision)
-- Local repository first, created by **you** (commands in README → "Git setup"). GitHub remote `https://github.com/Extract001/humanVSzombie.git` is connected later.
+- **Done (2026-11-08):** local repository created by you, first commit `ee5ad69` (Phases 0-10), pushed to `https://github.com/Extract001/humanVSzombie.git` (`main`). After each phase: `git add .` → `git commit` → `git push` (commands in README → "Git").
 - Before each substantial change I tell you exactly which commit command to run, or I ask you to confirm that you've committed.
 - I never run `git reset`, `git clean`, `git checkout -- <file>`, force-push, or delete or overwrite existing files without your explicit approval.
 

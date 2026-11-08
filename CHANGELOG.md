@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Git (2026-11-08)
+- Local repository created by the owner; first commit `ee5ad69` "LAST SIGNAL: Phases 0-10" (362 files) pushed to GitHub `Extract001/humanVSzombie`, branch `main`.
+- `.gitignore`: added `__pycache__/` and `*.pyc` (asset generator scripts).
+- README "Git" section rewritten: per-phase commit/push commands; roadmap Git workflow marked done.
+
 ### Phase 10 — Save system (2026-11-08) — IMPLEMENTED + TESTED (automated); not yet VERIFIED
 - **Saving** (`SaveSystem` autoload, `save_v1.json` in `%APPDATA%\Godot\app_userdata\LAST SIGNAL\`; in the browser, the site's storage). The game saves when a new game starts, when you **walk into the safehouse** ("Game saved"), when you **sleep**, when you quit to the menu **from the safehouse**, and **immediately when you die** (quitting can't undo a death). Never mid-expedition: the pause menu says when quitting would lose progress.
 - **What's saved:** everything in your bag, loaded rounds, current weapon, health (or "dead" → you wake at the bed with 75 HP), every searched container, dropped piles and **death backpacks** (with exact positions and quest items), the stash, unlocks (the cut gate), objective progress, the day, kills/deaths/time, the flashlight battery, which zombies are dead (they stay dead) and which doors are open. Living zombies go back to their starting spots.

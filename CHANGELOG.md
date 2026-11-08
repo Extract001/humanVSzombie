@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Redesign Slice 1 — Day/night siege (2026-11-08) — IMPLEMENTED + TESTED (automated); not yet VERIFIED
+New core loop chosen by you: scavenge by day, defend the safehouse at night (GDD §0).
+- **Day/night cycle:** DAY 5 min (06:00–18:00) → DUSK 45 s → NIGHT 2.5 min → DAWN. Clock and phase at the top of the screen. Dusk turns the world orange, night dark blue; a warm lamp lights the safehouse. Outside at night counts as darkness (Walkers see you at half range; a lit flashlight gives you away).
+- **Heat — "the town listens":** loud noises by day (gunshots +1, cutting a lock +0.5) raise Heat; the HUD shows "tonight: ~N of them". Resets at dawn.
+- **Night siege:** the horde (4 + 1.5 per night + 0.75 per Heat, never more than 40 Walkers awake) walks in from 10 points at the map edges and attacks the safehouse **windows**. The front door can't be broken.
+- **Windows & barricades:** three new safehouse windows (west, east, south). Press **E** to nail a plank (1 scrap, 1.2 s, max 3; moving cancels). Walkers crack and break planks; you can shoot and swing through the gaps, and they can reach through to bite you.
+- **Dawn:** summary screen (horde size, kills, boards broken, yesterday's Heat), the horde leaves, 5 emptied containers in town get fresh loot (never quest containers), autosave.
+- **Goal:** repair the radio and survive 10 nights → the convoy rescues you ("RESCUED"), then "Keep surviving". The radio broadcast now promises the convoy after the tenth night.
+- **Bed:** full heal + sleep until dusk + save (the day now changes at dawn). Not at dusk or night.
+- **Saving:** phase, clock, Heat, nights survived, boards and restocks are saved. A save made at dusk or night restarts at the start of dusk.
+- New original sounds: boards hit/break/nailed, dusk bell, horde howl (`tools/asset_generators/make_audio_s1.py`).
+- New tests: 10 (`tests/test_siege.gd`); the playthrough bot now also survives a real night; new `tests/scenarios/siege_scenarios.tscn` (part of `validate.bat scenarios`); `validate.bat perf` has night rows.
+- Physics layer 6 "barricades", layer 7 nav-only; navigation layer 2 = window links (zombies only).
+
 ### Phase 11 — Optimisation & QA (2026-11-08) — IMPLEMENTED + TESTED (automated); not yet VERIFIED
 - **Playthrough bot** (`tests/scenarios/playthrough_bot.tscn`): plays the whole game from a new game to the ending by walking the real map (doors, searches, stash, gate, radio) on 5 world seeds; plus a report-only run with the Walkers. All 5 seeds reach the ending. Now part of every `validate.bat` / `validate.sh` run.
 - **Memory soak test** (`tests/perf/soak_test.tscn`): 12 full sessions + a 5-minute session; no leaks found (0 orphan nodes, identical object counts, flat node count). Part of every validation run.

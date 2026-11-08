@@ -27,6 +27,10 @@ var light_bar: ProgressBar
 var light_label: Label
 ## Loudest recent noise the player made (px), shown on the meter and fading out.
 var noise_level: float = 0.0
+## Slice 1: the clock and Heat at the top centre.
+var _cycle: DayCycle
+var clock_label: Label
+var heat_label: Label
 var _noise_hold: float = 0.0
 
 const NOISE_METER_MAX: float = 480.0  # a pistol shot fills the meter
@@ -185,7 +189,7 @@ func show_toast(text: String) -> void:
 		_toast_tween.kill()
 	toast_label.modulate.a = 1.0
 	_toast_tween = create_tween()
-	_toast_tween.tween_interval(1.6)
+	_toast_tween.tween_interval(1.6 + text.length() / 30.0)  # longer messages stay longer
 	_toast_tween.tween_property(toast_label, "modulate:a", 0.0, 0.6)
 
 
@@ -199,6 +203,48 @@ func set_objective(title: String, progress: String) -> void:
 		$Root.add_child(objective_label)
 	objective_label.visible = title != ""
 	objective_label.text = "▶ " + title + (("\n   " + progress) if progress != "" else "")
+
+
+## Slice 1: day/night clock ("DAY 2  14:30") and Heat ("HEAT 3 - tonight ~9") at the top centre.
+func bind_cycle(cycle: DayCycle) -> void:
+	_cycle = cycle
+	clock_label = UiKit.label("", 10)
+	clock_label.name = "ClockLabel"
+	heat_label = UiKit.label("", 8, Color(0.95, 0.62, 0.35))
+	heat_label.name = "HeatLabel"
+	for l in [clock_label, heat_label]:
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		l.add_theme_color_override(&"font_shadow_color", Color(0, 0, 0, 0.85))
+		l.add_theme_constant_override(&"shadow_offset_x", 1)
+		l.add_theme_constant_override(&"shadow_offset_y", 1)
+		l.set_anchors_preset(Control.PRESET_CENTER_TOP)
+		l.offset_left = -110
+		l.offset_right = 110
+		$Root.add_child(l)
+	clock_label.offset_top = 5
+	clock_label.offset_bottom = 15
+	heat_label.offset_top = 16
+	heat_label.offset_bottom = 25
+	_update_cycle_labels()
+
+
+func _update_cycle_labels() -> void:
+	if _cycle == null:
+		return
+	var night_no: int = GameState.nights_survived + 1
+	match GameState.phase:
+		GameState.Phase.DAY:
+			clock_label.text = "DAY %d   %s" % [GameState.day, _cycle.clock_text()]
+			clock_label.add_theme_color_override(&"font_color", UiKit.TEXT)
+			heat_label.text = "HEAT %d  -  tonight: ~%d of them" % [roundi(GameState.heat), _cycle.horde_estimate()]
+		GameState.Phase.DUSK:
+			clock_label.text = "DUSK   %s   -   night in %d s" % [_cycle.clock_text(), ceili(_cycle.time_left())]
+			clock_label.add_theme_color_override(&"font_color", Color(1.0, 0.7, 0.45))
+			heat_label.text = "HEAT %d  -  tonight: ~%d of them" % [roundi(GameState.heat), _cycle.horde_estimate()]
+		_:
+			clock_label.text = "NIGHT %d   %s   -   dawn in %d s" % [night_no, _cycle.clock_text(), ceili(_cycle.time_left())]
+			clock_label.add_theme_color_override(&"font_color", Color(0.75, 0.8, 1.0))
+			heat_label.text = "Walkers left tonight: %d" % _cycle.horde_alive()
 
 
 ## Short fade to black and back (sleeping).
@@ -219,6 +265,8 @@ func set_kills(kills: int) -> void:
 
 
 func _process(delta: float) -> void:
+	if _cycle != null and Engine.get_process_frames() % 10 == 0:
+		_update_cycle_labels()
 	fps_label.visible = Settings.show_fps
 	if fps_label.visible:
 		# Phase 11: memory next to the FPS for long play sessions (only reported by debug/editor runs).
@@ -231,9 +279,11 @@ func _process(delta: float) -> void:
 	reload_bar.visible = _player.weapons.is_reloading
 	reload_bar.value = _player.weapons.reload_progress() * 100.0
 	if search_bar != null:
-		search_bar.visible = _player.is_searching()
+		var working: bool = _player.is_working()
+		search_bar.visible = _player.is_searching() or working
 		search_label.visible = search_bar.visible
-		search_bar.value = _player.search_progress() * 100.0
+		search_label.text = _player.work_label if working else "SEARCHING..."
+		search_bar.value = (_player.work_progress() if working else _player.search_progress()) * 100.0
 		if search_bar.visible:
 			# Just under the player's feet, wherever the camera puts them on screen.
 			var at: Vector2 = _player.get_global_transform_with_canvas().origin

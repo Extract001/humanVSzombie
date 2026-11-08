@@ -243,6 +243,15 @@ Spent ammo and consumables were already removed from the inventory when used, so
 - **Vehicle** (`scenes/world/vehicle.tscn`): car/pickup/bus; StaticBody2D in the `nav_source` group.
 - **Group registration timing:** `nav_source` members join in `_enter_tree()`. `NavigationBaker` bakes deferred (after the whole level's `_ready`), so everything is included.
 
+### 4.10e Night siege (Redesign Slice 1)
+- `SiegeData` (`data/siege/siege_data.tres`): all cycle, horde, Heat, barricade and look numbers.
+- `DayCycle` (`scripts/main/day_cycle.gd`, created by game.gd at runtime): advances `GameState.phase` / `phase_time` (DAY → DUSK → NIGHT → dawn), tints the world with a `CanvasModulate` (world canvas only; HUD unaffected; interior darkness still uses the local Subtract lights), turns on a warm `PointLight2D` lamp in the safehouse, marks the player "in darkness" outdoors at night, spawns the horde at the `HordeSpawns` markers (never within 360 px of the player) over the first 60 % of the night, removes surviving horde Walkers at dawn, restocks 5 emptied non-quest containers (`GameState.restock`: new roll key `seed:id:restockN`), emits `dawn(summary)`. A save from dusk/night restarts at the start of dusk.
+- Heat: `NoiseSystem.noise_emitted` → `GameState.add_heat(radius / 480)` for non-zombie noises ≥ 200 px during day/dusk.
+- `Barricade` (`scenes/world/barricade.tscn`): 1-tile window in a wall; physics **layer 6 "barricades"** (player mask 1|4|32, zombie mask 1|2|4|32), so bullets, sight and light pass through. Health pool in `GameState.barricades`. Player: E → `Player.start_work()` (generic timed job: moving, attacking or getting hurt cancels) → plank. Zombies: `_check_blocked_by_barricade()` hits it every 1.5 s via slide collisions.
+- Navigation: each window carries a nav-only blocker (physics **layer 7**, parsed by the baker, collides with nothing) and a bidirectional `NavigationLink2D` on **navigation layer 2**. Zombie agents use layers 1|2 (they path through windows and hit the boards); default path queries use layer 1 (go round to the door). Zombies crossing a link head straight for the exit point (no re-pathing in the gap).
+- Horde Walkers: `Zombie.siege_goal` (a point just inside a window). When calm they march there (INVESTIGATE with a 120 s patience) and never go dormant; noises and the player still distract them.
+- `scripts/ui/dawn_panel.gd`: morning summary (pauses the game), "RESCUED" variant after night 10 with the radio repaired, then "Keep surviving".
+
 ### 4.11 Input & mobile readiness
 All gameplay reads **actions** (`Input.get_vector("move_left", ...)`), never raw keys. Aim is an abstract `aim_direction` the player script receives. Mouse sets it on desktop; Godot 4.7's built-in `VirtualJoystick` can set it on Android later without touching gameplay code.
 

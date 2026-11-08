@@ -2,7 +2,9 @@
 
 A top-down 2D zombie survival game made with **Godot 4.7.2** and **GDScript**.
 
-> Status: **Phase 11 — Optimisation & QA.** Phases 4–11 are IMPLEMENTED and TESTED by automated checks (Linux + automated browser test) and wait for your Windows play-tests. Phase 2 VERIFIED. Phase 3 behaviour passed but **not VERIFIED** (30 FPS on your laptop, cause not found yet: please run `validate.bat perf` once — it now also tries the ANGLE graphics driver and records your graphics chips, screen refresh rate and power plan). All art, sound and music is original, made from code (`tools/asset_generators/`).
+> Status: **Redesign Slice 1 — day/night siege.** Scavenge by day; at night the horde attacks your safehouse; survive 10 nights and repair the radio to be rescued. Slice 1 and Phases 4–11 are TESTED by automated checks and wait for your Windows play-tests. Phase 2 VERIFIED. Phase 3 **not VERIFIED** (30 FPS on your laptop: please run `validate.bat perf`). All art, sound and music is original, made from code (`tools/asset_generators/`).
+
+**How a day works:** DAY (5 min, clock at the top) → DUSK (45 s: get home, press **E** on a window to nail a plank, 1 scrap each, max 3) → NIGHT (2.5 min: the horde attacks the three windows; the front door holds) → DAWN (summary, autosave). Loud noises by day (gunshots, cutting locks) raise **HEAT**: the top of the screen shows how many will come tonight. The bed heals you and skips to dusk.
 
 ## Requirements
 - Godot 4.7.2-stable, Standard edition (installed at `C:\Al-am\Game_engine\`)
@@ -44,7 +46,7 @@ Change keys in the game: **Settings → Controls** (saved). Graphics: **Settings
 | Same, plus the darkness render test (a window opens briefly) | Open Command Prompt in `tools\` and run `validate.bat render` | `[WIN-AUTO]` |
 | Browser build | Double-click `tools\serve_web.bat`. It opens `http://localhost:8060/index.html?perf` in your browser | `[WEB-EXPORT]` |
 | Performance check (about 6 minutes; charger plugged in, Godot editor closed) | Command Prompt in `tools\` → `validate.bat perf`. Send Claude the four files it lists from `logs\` (`perf_system.txt`, `perf_benchmark_opengl3.txt`, `perf_benchmark_opengl3_angle_quick.txt`, `perf_hitches.txt`) | `[WIN-AUTO]` |
-| Walker difficulty scenarios S1–S6 + 40-zombie performance | Command Prompt in `tools\` → `validate.bat scenarios` (about 20 s; prints a results table) | `[WIN-AUTO]` |
+| Walker difficulty scenarios S1–S6 + 40-zombie performance + night siege scenarios | Command Prompt in `tools\` → `validate.bat scenarios` (about 1.5 minutes; prints results tables, siege results also in `logs\siege_scenarios.txt`) | `[WIN-AUTO]` |
 | Play the six difficulty arenas yourself | In Godot's FileSystem panel open `scenes/debug/arena_playground.tscn`, press **F6** (Run Current Scene). In the game press **F1–F6** to switch arenas | `[WIN-PLAY]` |
 | Linux automated checks (Claude) | `tools/validate.sh --render --scenarios` | `[LINUX-AUTO]` |
 

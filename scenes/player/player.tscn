@@ -34,48 +34,48 @@ light_mode = 1
 [sub_resource type="CircleShape2D" id="CircleShape2D_uniwh"]
 radius = 20.0
 
-[node name="Player" type="CharacterBody2D" unique_id=121078278]
+[node name="Player" type="CharacterBody2D" unique_id=1664575424]
 collision_layer = 2
-collision_mask = 5
+collision_mask = 37
 motion_mode = 1
 script = ExtResource("1_fm80t")
 stats = ExtResource("2_gx1jg")
 
-[node name="Shape" type="CollisionShape2D" parent="." unique_id=732904180]
+[node name="Shape" type="CollisionShape2D" parent="." unique_id=1098036720]
 shape = SubResource("CircleShape2D_cnsyf")
 
-[node name="Sprite" type="AnimatedSprite2D" parent="." unique_id=2114682615]
+[node name="Sprite" type="AnimatedSprite2D" parent="." unique_id=784737993]
 light_mask = 3
 sprite_frames = ExtResource("3_ugbui")
 animation = &"idle_down"
 offset = Vector2(0, -9)
 
-[node name="Health" type="Node" parent="." unique_id=1691721593]
+[node name="Health" type="Node" parent="." unique_id=1448394264]
 script = ExtResource("4_fcs02")
 
-[node name="Hurtbox" type="Area2D" parent="." unique_id=1960240751 node_paths=PackedStringArray("health")]
+[node name="Hurtbox" type="Area2D" parent="." unique_id=1610100173 node_paths=PackedStringArray("health")]
 collision_layer = 0
 collision_mask = 0
 monitoring = false
 script = ExtResource("5_myrg7")
 health = NodePath("../Health")
 
-[node name="Shape" type="CollisionShape2D" parent="Hurtbox" unique_id=1709723193]
+[node name="Shape" type="CollisionShape2D" parent="Hurtbox" unique_id=647807232]
 position = Vector2(0, -6)
 shape = SubResource("CircleShape2D_007i1")
 
-[node name="Camera" type="Camera2D" parent="." unique_id=1057336137]
+[node name="Camera" type="Camera2D" parent="." unique_id=1801764230]
 position_smoothing_enabled = true
 position_smoothing_speed = 7.0
 
-[node name="AdaptationLight" type="PointLight2D" parent="." unique_id=407205049]
+[node name="AdaptationLight" type="PointLight2D" parent="." unique_id=314175491]
 position = Vector2(0, -6)
 enabled = false
 energy = 0.3
 range_item_cull_mask = 2
 texture = SubResource("GradientTexture2D_j4nxn")
 
-[node name="Flashlight" type="PointLight2D" parent="." unique_id=243124742]
+[node name="Flashlight" type="PointLight2D" parent="." unique_id=79125968]
 position = Vector2(0, -7)
 enabled = false
 color = Color(1, 0.95, 0.8, 1)
@@ -86,26 +86,26 @@ shadow_color = Color(0, 0, 0, 1)
 texture = ExtResource("6_kvlxm")
 texture_scale = 1.2
 
-[node name="Inventory" type="Node" parent="." unique_id=1547775613]
+[node name="Inventory" type="Node" parent="." unique_id=1168194482]
 script = ExtResource("7_uf5tr")
 starting_items = {
 &"ammo_pistol": 16,
 &"bandage": 2
 }
 
-[node name="Weapons" type="Node" parent="." unique_id=1896119855]
+[node name="Weapons" type="Node" parent="." unique_id=982780672]
 script = ExtResource("8_lgqa7")
 starting_weapons = Array[ExtResource("9_8ydkj")]([ExtResource("10_3j4b4"), ExtResource("11_yj68g")])
 starting_rounds = Array[int]([0, 8])
 
-[node name="WeaponPivot" type="Node2D" parent="." unique_id=37838495]
+[node name="WeaponPivot" type="Node2D" parent="." unique_id=1767797131]
 position = Vector2(0, -7)
 
-[node name="WeaponSprite" type="Sprite2D" parent="WeaponPivot" unique_id=1420563423]
+[node name="WeaponSprite" type="Sprite2D" parent="WeaponPivot" unique_id=789127143]
 light_mask = 3
 offset = Vector2(9, 0)
 
-[node name="MuzzleLight" type="PointLight2D" parent="WeaponPivot" unique_id=1904614575]
+[node name="MuzzleLight" type="PointLight2D" parent="WeaponPivot" unique_id=1605249164]
 position = Vector2(16, 0)
 enabled = false
 color = Color(1, 0.85, 0.55, 1)
@@ -114,18 +114,18 @@ range_item_cull_mask = 3
 texture = SubResource("GradientTexture2D_j4nxn")
 texture_scale = 2.0
 
-[node name="MuzzleFlash" type="Sprite2D" parent="WeaponPivot" unique_id=1654723886]
+[node name="MuzzleFlash" type="Sprite2D" parent="WeaponPivot" unique_id=1117369344]
 visible = false
 material = SubResource("CanvasItemMaterial_28m0y")
 position = Vector2(19, 0)
 texture = ExtResource("12_ioxgp")
 hframes = 2
 
-[node name="Interactor" type="Area2D" parent="." unique_id=1448252969]
+[node name="Interactor" type="Area2D" parent="." unique_id=1538950793]
 collision_layer = 0
 collision_mask = 16
 monitorable = false
 
-[node name="Shape" type="CollisionShape2D" parent="Interactor" unique_id=1486618354]
+[node name="Shape" type="CollisionShape2D" parent="Interactor" unique_id=421510880]
 position = Vector2(0, -4)
 shape = SubResource("CircleShape2D_uniwh")

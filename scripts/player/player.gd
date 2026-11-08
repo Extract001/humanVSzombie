@@ -22,6 +22,8 @@ signal state_changed(new_state: State)
 signal interactable_changed(interactable: Interactable)
 signal search_started(container: LootContainer, duration: float)
 signal search_cancelled
+## Slice 1: a timed job in place (nailing a plank) was interrupted.
+signal work_cancelled
 ## A container/pile is open for taking items (the loot panel shows it).
 signal loot_opened(container: LootContainer)
 ## Something to tell the player ("Already at full health", "Can't drop quest items").
@@ -57,6 +59,11 @@ var searching_container: LootContainer = null
 
 var _search_left: float = 0.0
 var _search_total: float = 0.0
+var _work_left: float = 0.0
+var _work_total: float = 0.0
+var _work_done: Callable = Callable()
+## Label for the HUD progress bar while working, e.g. "BOARDING UP...".
+var work_label: String = ""
 var _heal_left: float = 0.0
 var _heal_rate: float = 0.0
 
@@ -142,6 +149,7 @@ func _physics_process(delta: float) -> void:
 	_update_animation(input != Vector2.ZERO)
 	_update_interactable()
 	_update_search(delta, input != Vector2.ZERO)
+	_update_work(delta, input != Vector2.ZERO)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -244,7 +252,7 @@ func try_cycle(step: int) -> bool:
 
 
 func try_interact() -> bool:
-	if state != State.NORMAL or current_interactable == null or is_searching():
+	if state != State.NORMAL or current_interactable == null or is_searching() or is_working():
 		return false
 	current_interactable.interact(self)
 	return true
@@ -282,6 +290,7 @@ func start_search(container: LootContainer, duration: float) -> bool:
 
 ## Stops a search in progress; nothing is granted.
 func cancel_search() -> void:
+	cancel_work()  # attacking, shoving, switching or getting hurt also stops a job in progress
 	if searching_container == null:
 		return
 	searching_container = null
@@ -305,6 +314,51 @@ func _update_search(delta: float, is_moving: bool) -> void:
 		searching_container = null
 		container.open_contents()
 		open_loot(container)
+
+
+# ---------------- work: timed jobs in place (Slice 1) ----------------
+
+func is_working() -> bool:
+	return _work_done.is_valid()
+
+
+func work_progress() -> float:
+	if not is_working() or _work_total <= 0.0:
+		return 0.0
+	return 1.0 - _work_left / _work_total
+
+
+## Starts a job that takes `duration` seconds of standing still; `done` runs when it finishes.
+## Moving, attacking, shoving, switching weapons or getting hurt cancels it.
+func start_work(duration: float, label: String, done: Callable) -> bool:
+	if state != State.NORMAL or is_searching() or is_working() or not done.is_valid():
+		return false
+	_work_total = maxf(0.01, duration)
+	_work_left = _work_total
+	work_label = label
+	_work_done = done
+	return true
+
+
+func cancel_work() -> void:
+	if not is_working():
+		return
+	_work_done = Callable()
+	_work_left = 0.0
+	work_cancelled.emit()
+
+
+func _update_work(delta: float, is_moving: bool) -> void:
+	if not is_working():
+		return
+	if is_moving or state != State.NORMAL:
+		cancel_work()
+		return
+	_work_left -= delta
+	if _work_left <= 0.0:
+		var done: Callable = _work_done
+		_work_done = Callable()
+		done.call()
 
 
 ## Uses one item from the bag (bandage, medicine). Returns false if it can't be used now.
@@ -557,7 +611,18 @@ func enter_darkness() -> void:
 
 func exit_darkness() -> void:
 	_darkness_zones = maxi(0, _darkness_zones - 1)
-	_set_in_darkness(_darkness_zones > 0)
+	_set_in_darkness(_darkness_zones > 0 or _outdoor_dark)
+
+
+## Slice 1: night outdoors counts as darkness (Walkers see you at half range; a lit flashlight
+## gives you away). Set by the DayCycle; the lit safehouse doesn't count.
+var _outdoor_dark: bool = false
+
+func set_outdoor_dark(on: bool) -> void:
+	if on == _outdoor_dark:
+		return
+	_outdoor_dark = on
+	_set_in_darkness(_darkness_zones > 0 or _outdoor_dark)
 
 
 func _set_in_darkness(value: bool) -> void:

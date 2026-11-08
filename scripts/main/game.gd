@@ -5,6 +5,7 @@ extends Node2D
 ## Phase 7: objective chain, safehouse stations (stash, bed, radio desk, objective board).
 ## Phase 8: pause menu (Esc), settings, back to the main menu.
 ## Phase 10: saving (death, bed, entering the safehouse, quitting from the safehouse) and loading.
+## Slice 1 (night siege): DayCycle (day → dusk → night → dawn), the dawn summary, bed = sleep until dusk.
 
 const DEATH_SCREEN_DELAY: float = 1.0
 const PILE_SCENE: PackedScene = preload("res://scenes/world/loot_container.tscn")
@@ -29,6 +30,8 @@ const SAFEHOUSE_RECT := Rect2(71 * 16, 65 * 16, 15 * 16, 13 * 16)
 @onready var settings_menu: CanvasLayer = $SettingsMenu
 
 var piles_root: Node2D
+var day_cycle: DayCycle
+var dawn_panel: CanvasLayer
 var _last_backpack: StringName = &""
 
 var elapsed: float = 0.0
@@ -64,8 +67,20 @@ func _ready() -> void:
 	GameState.piles_changed.connect(_sync_piles)
 	_sync_piles()
 
+	day_cycle = DayCycle.new()
+	day_cycle.name = "DayCycle"
+	add_child(day_cycle)
+	day_cycle.setup(self, player, world.get_node("Actors"), world)
+	day_cycle.dawn.connect(_on_dawn)
+	dawn_panel = CanvasLayer.new()
+	dawn_panel.name = "DawnPanel"
+	dawn_panel.set_script(load("res://scripts/ui/dawn_panel.gd"))
+	add_child(dawn_panel)
+	dawn_panel.bind(player)
+
 	Soundscape.player = player
 	hud.bind(player)
+	hud.bind_cycle(day_cycle)
 	loot_panel.bind(player)
 	inventory_panel.bind(player)
 	stash_panel.bind(player)
@@ -82,7 +97,7 @@ func _ready() -> void:
 		(station as SafehouseStation).used.connect(_on_station_used)
 	pause_menu.bind(self)
 	game_over.main_menu_requested.connect(go_to_main_menu)
-	for panel in [loot_panel, inventory_panel, stash_panel, objectives_panel, ending_panel, pause_menu]:
+	for panel in [loot_panel, inventory_panel, stash_panel, objectives_panel, ending_panel, pause_menu, dawn_panel]:
 		panel.opened.connect(_update_ui_mode)
 		panel.closed.connect(_update_ui_mode)
 	_restore_from_save()
@@ -132,7 +147,8 @@ func _process(delta: float) -> void:
 		elapsed += delta
 	var inside: bool = is_in_safehouse()
 	Soundscape.set_mood("safehouse" if inside else "outside")
-	if inside and not _was_in_safehouse and not player.is_dead() and Time.get_ticks_msec() - _last_auto_save_ms > 5000:
+	if inside and not _was_in_safehouse and not player.is_dead() and not day_cycle.is_night() \
+			and Time.get_ticks_msec() - _last_auto_save_ms > 5000:
 		_last_auto_save_ms = Time.get_ticks_msec()
 		if save_now("safehouse"):   # back home safe: autosave
 			get_tree().call_group(&"hud", &"show_toast", "Game saved")
@@ -220,19 +236,28 @@ func _on_station_used(station: SafehouseStation, _by: Node) -> void:
 			use_radio()
 
 
-## Bed (GDD §11): full heal and a new day. Refused with a zombie nearby.
-## (Saving here arrives with the save system in Phase 10.) Returns true if you slept.
+## Bed: full heal, sleep until dusk (Slice 1; the day now ends at dawn after the night) and save.
+## Refused at dusk/night and with a zombie nearby. Returns true if you slept.
 func try_sleep() -> bool:
+	if GameState.phase != GameState.Phase.DAY:
+		get_tree().call_group(&"hud", &"show_toast", "No time to sleep. They're coming.")
+		return false
 	for z in get_tree().get_nodes_in_group(&"zombies"):
 		if (z as Zombie).state != Zombie.State.DEAD and (z as Zombie).global_position.distance_to(player.global_position) < SLEEP_SAFE_DISTANCE:
 			get_tree().call_group(&"hud", &"show_toast", "You can't sleep with them this close.")
 			return false
 	player.health.heal(player.health.max_health)
-	GameState.day += 1
-	get_tree().call_group(&"hud", &"show_toast", "You sleep until morning. Day %d. Game saved." % GameState.day)
-	hud.flash_black()
+	day_cycle.skip_to_dusk()
 	save_now("bed")
+	get_tree().call_group(&"hud", &"show_toast", "You sleep until dusk. Game saved. Board up the windows!")
+	hud.flash_black()
 	return true
+
+
+## Slice 1: a night was survived. Save first (the summary pauses the game), then show it.
+func _on_dawn(summary: Dictionary) -> void:
+	save_now("dawn")
+	dawn_panel.show_summary(summary)
 
 
 func use_radio() -> void:
@@ -259,7 +284,8 @@ func go_to_main_menu() -> void:
 ## Mouse and crosshair follow whether a panel is open; the player ignores clicks meanwhile.
 func _update_ui_mode() -> void:
 	var panel_open: bool = loot_panel.visible or inventory_panel.visible or stash_panel.visible \
-		or objectives_panel.visible or ending_panel.visible or pause_menu.visible
+		or objectives_panel.visible or ending_panel.visible or pause_menu.visible \
+		or (dawn_panel != null and dawn_panel.visible)
 	player.ui_open = panel_open
 	crosshair.visible = not panel_open and not game_over.visible
 	if DisplayServer.get_name() != "headless":
@@ -318,6 +344,8 @@ func _restore_from_save() -> void:
 		if SaveSystem.fresh_start:   # a brand-new game replaces the old save straight away
 			SaveSystem.fresh_start = false
 			save_now.call_deferred("new_game")
+			get_tree().call_group.call_deferred(&"hud", &"show_toast",
+				"Scavenge by day. At night they come for your safehouse: board up the windows (E, 1 scrap).")
 		return
 	var d: Dictionary = SaveSystem.pending_player
 	SaveSystem.pending_player = {}
@@ -337,5 +365,6 @@ func _restore_from_save() -> void:
 			door.is_open = true
 	player.apply_save_dict(d, respawn_point())
 	objectives.validate_quest_items()
-	get_tree().call_group(&"hud", &"show_toast", "Day %d" % GameState.day)
+	get_tree().call_group(&"hud", &"show_toast", ("Day %d" % GameState.day) if GameState.phase == GameState.Phase.DAY
+		else "Day %d. Dusk is falling: board up!" % GameState.day)
 

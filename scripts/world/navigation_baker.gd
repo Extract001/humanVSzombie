@@ -9,6 +9,12 @@ extends NavigationRegion2D
 @export var agent_radius: float = 6.0
 @export var source_group: StringName = &"nav_source"
 
+## Physics layer 7: bodies only the navigation bake sees (nothing collides with it).
+const NAV_ONLY_LAYER: int = 64
+## Navigation layer 2: window links. Zombies path through windows (layers 1+2); the default
+## path queries (layer 1) go around them, through the doors.
+const WINDOW_NAV_LAYER: int = 2
+
 
 func _ready() -> void:
 	add_to_group(&"navigation_bakers")
@@ -19,7 +25,8 @@ func _ready() -> void:
 func rebake() -> void:
 	var poly := NavigationPolygon.new()
 	poly.parsed_geometry_type = NavigationPolygon.PARSED_GEOMETRY_STATIC_COLLIDERS
-	poly.parsed_collision_mask = 1  # physics layer 1: world
+	# Physics layer 1 (world) + layer 7 (nav-only blockers: the safehouse windows, Slice 1).
+	poly.parsed_collision_mask = 1 | NAV_ONLY_LAYER
 	poly.source_geometry_mode = NavigationPolygon.SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN
 	poly.source_geometry_group_name = source_group
 	poly.agent_radius = agent_radius

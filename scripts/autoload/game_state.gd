@@ -34,6 +34,20 @@ var objectives_completed: Array[StringName] = []
 var taken_log: Dictionary = {}
 var day: int = 1
 
+# ---- Night siege (Slice 1) ----
+enum Phase { DAY, DUSK, NIGHT }
+signal heat_changed(heat: float)
+## Where in the day/night cycle we are, and how many seconds into that phase.
+var phase: int = Phase.DAY
+var phase_time: float = 0.0
+## "The town listens": loud noises today raise Heat; tonight's horde grows with it. Resets at dawn.
+var heat: float = 0.0
+var nights_survived: int = 0
+## barricade_id -> remaining health (all planks together). Missing = the start value.
+var barricades: Dictionary = {}
+## container_id -> how many times it was restocked at dawn (gives each refill its own roll).
+var restocks: Dictionary = {}
+
 var _next_pile: int = 1
 
 
@@ -49,6 +63,12 @@ func new_game(seed_value: int = -1) -> void:
 	objectives_completed = []
 	taken_log = {}
 	day = 1
+	phase = Phase.DAY
+	phase_time = 0.0
+	heat = 0.0
+	nights_survived = 0
+	barricades = {}
+	restocks = {}
 	_next_pile = 1
 	piles_changed.emit()
 
@@ -67,7 +87,10 @@ func roll_container(container_id: StringName, type: StringName, guaranteed: Dict
 	if containers.has(container_id):
 		return containers[container_id]
 	var rng := RandomNumberGenerator.new()
-	rng.seed = hash(str(world_seed) + ":" + String(container_id))
+	var key: String = str(world_seed) + ":" + String(container_id)
+	if restocks.has(container_id):
+		key += ":restock%d" % int(restocks[container_id])  # each morning's refill is its own roll
+	rng.seed = hash(key)
 	var items: Array = []
 	var table: LootTable = LootTableRegistry.get_table(type)
 	if table != null:
@@ -129,6 +152,32 @@ func put_into(container_id: StringName, item_id: StringName, qty: int) -> void:
 	_add_to(items, item_id, qty)
 	containers[container_id] = items
 	container_changed.emit(container_id)
+
+
+# ---------------- night siege (Slice 1) ----------------
+
+func add_heat(amount: float) -> void:
+	if amount <= 0.0:
+		return
+	heat += amount
+	heat_changed.emit(heat)
+
+
+func reset_heat() -> void:
+	heat = 0.0
+	heat_changed.emit(heat)
+
+
+## Morning refill: these containers forget their (emptied) contents and roll fresh loot when
+## searched again. Callers must never pass quest containers (they'd hand out quest items twice).
+func restock(container_ids: Array) -> void:
+	for id in container_ids:
+		var cid := StringName(id)
+		if piles.has(cid):
+			continue
+		restocks[cid] = int(restocks.get(cid, 0)) + 1
+		containers.erase(cid)
+		container_changed.emit(cid)
 
 
 # ---------------- stash & unlocks (Phase 7) ----------------
@@ -261,6 +310,12 @@ func to_dict() -> Dictionary:
 		"objectives_completed": objectives_completed.map(func(o: StringName) -> String: return String(o)),
 		"taken_log": taken,
 		"day": day,
+		"phase": phase,
+		"phase_time": phase_time,
+		"heat": heat,
+		"nights_survived": nights_survived,
+		"barricades": _string_keys(barricades),
+		"restocks": _string_keys(restocks),
 	}
 
 
@@ -302,8 +357,27 @@ func from_dict(d: Dictionary) -> void:
 			row[StringName(item)] = int(taken_in[cid][item])
 		taken_log[StringName(cid)] = row
 	day = int(d.get("day", 1))
+	phase = int(d.get("phase", Phase.DAY))
+	phase_time = float(d.get("phase_time", 0.0))
+	heat = float(d.get("heat", 0.0))
+	nights_survived = int(d.get("nights_survived", maxi(0, day - 1)))
+	barricades.clear()
+	var bd: Dictionary = d.get("barricades", {})
+	for id in bd:
+		barricades[StringName(id)] = float(bd[id])
+	restocks.clear()
+	var rs: Dictionary = d.get("restocks", {})
+	for id in rs:
+		restocks[StringName(id)] = int(rs[id])
 	piles_changed.emit()
 	stash_changed.emit()
+
+
+static func _string_keys(d: Dictionary) -> Dictionary:
+	var out := {}
+	for k in d:
+		out[String(k)] = d[k]
+	return out
 
 
 static func _items_out(items: Array) -> Array:

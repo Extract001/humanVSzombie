@@ -87,6 +87,9 @@ func _run(seed_value: int, with_zombies: bool) -> void:
 	if ok and not (t.is_chain_complete() and game.ending_panel.visible):
 		_fail(label, "chain not complete / ending not shown at the end")
 		ok = false
+	# Slice 1: the full day/night loop once, in real time: bed → dusk → night (horde) → dawn → day 2.
+	if ok and not with_zombies and seed_value == SEEDS[0]:
+		ok = await _first_night(label)
 	var minutes: float = (Engine.get_physics_frames() - start_ticks) / 60.0 / 60.0
 	print("BOT %-16s %s  game time %.1f min  bites %d  kills %d" % [label, "ENDING REACHED" if ok else "STOPPED",
 		minutes, _bites, int(GameState.stats.get("kills", 0))])
@@ -95,6 +98,36 @@ func _run(seed_value: int, with_zombies: bool) -> void:
 		failures.remove_at(failures.size() - 1)  # mode B is report-only (bots don't fight well)
 	game.queue_free()
 	await _frames(3)
+
+
+func _first_night(label: String) -> bool:
+	game.ending_panel.close()
+	await _frames(2)
+	if not await _go_and_use_retry(game.get_node("World/Map/Bed"), "use", 1):
+		_fail(label, "couldn't use the bed")
+		return false
+	if GameState.phase != GameState.Phase.DUSK:
+		_fail(label, "sleeping didn't skip to dusk")
+		return false
+	p.health.setup(1.0e9)   # the bot doesn't fight at night; the siege scenarios measure that
+	var limit: int = Engine.get_physics_frames() + int((SiegeData.new().dusk_length + SiegeData.new().night_length + 10.0) * 60.0)
+	var saw_night := false
+	var max_horde := 0
+	while not game.dawn_panel.visible and Engine.get_physics_frames() < limit:
+		saw_night = saw_night or GameState.phase == GameState.Phase.NIGHT
+		max_horde = maxi(max_horde, get_tree().get_nodes_in_group(&"horde").size())
+		await _frames(30)
+	if not (saw_night and game.dawn_panel.visible):
+		_fail(label, "no night / no dawn")
+		return false
+	game.dawn_panel.close()
+	await _frames(2)
+	var save: Dictionary = SaveSystem.read_save()
+	var ok: bool = GameState.day == 2 and GameState.nights_survived == 1 and save.ok and int(save.data.world.day) == 2
+	print("BOT %-16s first night: horde %d, dawn reached, day %d, saved %s" % [label, max_horde, GameState.day, str(save.ok)])
+	if not ok:
+		_fail(label, "dawn didn't start day 2 / wasn't saved")
+	return ok
 
 
 func _fail(label: String, msg: String) -> void:

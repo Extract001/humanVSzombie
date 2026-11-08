@@ -42,6 +42,10 @@ if [[ " $* " == *" --scenarios "* ]]; then
   "$GODOT" --headless --path "$PROJECT" --fixed-fps 60 res://tests/scenarios/difficulty_scenarios.tscn >> "$LOG" 2>&1 || fail=1
   grep -q "SCENARIOS COMPLETED" "$LOG" || fail=1
   sed -n '/WALKER DIFFICULTY/,/SCENARIOS COMPLETED/p' "$LOG"
+  echo "[+] Night siege scenarios (Slice 1, report only)..." | tee -a "$LOG"
+  "$GODOT" --headless --path "$PROJECT" --fixed-fps 60 res://tests/scenarios/siege_scenarios.tscn >> "$LOG" 2>&1 || fail=1
+  grep -q "SIEGE SCENARIOS COMPLETED" "$LOG" || fail=1
+  sed -n '/^SIEGE SCENARIOS (/,/SIEGE SCENARIOS COMPLETED/p' "$LOG"
 fi
 
 if grep -nE "SCRIPT ERROR|Parse Error|^ERROR:" "$LOG" | grep -v "audio_driver_alsa\|status < 0" ; then fail=1; fi

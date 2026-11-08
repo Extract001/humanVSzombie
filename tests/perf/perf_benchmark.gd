@@ -76,6 +76,10 @@ func _ready() -> void:
 	for spot in [["warehouse", Vector2(21.5, 8.5)], ["street", Vector2(78.5, 58.5)]]:
 		await _measure_game(spot[0].substr(0, 5) + "+L-sh", spot[1] * 16.0, false, true)
 	Settings.flashlight_shadows = keep
+	# Slice 1: night siege with the horde at the 40-Walker cap, flashlight on.
+	for spot in [["safehouse", Vector2(78.5, 72.5)], ["street", Vector2(78.5, 58.5)]]:
+		await _measure_game(spot[0].substr(0, 5) + " night", spot[1] * 16.0, false, true, true)
+	_out("(night = Slice 1 siege: dark tint, safehouse lamp, horde at the 40-Walker cap, flashlight on)")
 	_out("(+L-sh = flashlight on, \"Flashlight shadows\" setting OFF)")
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED)
 	_out("")
@@ -160,10 +164,15 @@ func _measure(place: String, walkers: int, vsync: bool, lights: bool) -> void:
 	await get_tree().process_frame
 
 
-func _measure_game(label: String, pos: Vector2, vsync: bool, flashlight: bool = false) -> void:
+func _measure_game(label: String, pos: Vector2, vsync: bool, flashlight: bool = false, night: bool = false) -> void:
 	var game: Node = load("res://scenes/main/game.tscn").instantiate()
 	add_child(game)
 	var p: Player = game.get_node("World/Actors/Player")
+	if night:
+		# Slice 1: a full-size night (horde up to the 40-Walker cap, all spawned, heading for the safehouse).
+		GameState.heat = 40.0
+		game.day_cycle.start_night()
+		GameState.phase_time = SiegeData.new().night_length * 0.7
 	p.use_mouse_aim = false
 	p.global_position = pos
 	p.health.setup(1.0e9)

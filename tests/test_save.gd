@@ -186,7 +186,7 @@ func test_autosave_on_entering_safehouse_and_sleeping_not_outside() -> void:
 	p.health.take_damage(30.0)
 	check(game.try_sleep(), "slept")
 	check_eq(SaveSystem.last_save_reason, "bed", "sleeping saves")
-	check_eq(int(SaveSystem.read_save().data.world.day), 2, "the new day is in the save")
+	check_eq(int(SaveSystem.read_save().data.world.phase), GameState.Phase.DUSK, "the skip to dusk is in the save")
 	game.queue_free()
 	_clear()
 

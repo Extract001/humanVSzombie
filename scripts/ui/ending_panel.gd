@@ -1,6 +1,6 @@
 extends CanvasLayer
-## MVP ending (GDD §11): the repaired radio picks up a broadcast that reveals an evacuation route.
-## The game continues afterwards ("Keep playing").
+## The repaired radio picks up the convoy's broadcast (GDD §11). Slice 1: the convoy comes at dawn
+## after night 10 (DayCycle / dawn panel "RESCUED"). The game continues afterwards ("Keep playing").
 
 signal opened
 signal closed
@@ -8,12 +8,12 @@ signal closed
 const BROADCAST := [
 	"...static...",
 	"\"...this is the Riverside relief convoy, repeating on all emergency bands.",
-	"Survivors in the Ashford district: the old rail bridge east of the checkpoint is still standing.",
-	"We will hold the far side at dawn, every third day. Bring only what you can carry.",
-	"Signal with a light when you reach the bridge. Do not use the main road...\"",
+	"Survivors in the Ashford district: the roads are full of them. We can't reach you yet.",
+	"Hold out. We will cross the old rail bridge at dawn after the tenth night.",
+	"Keep this channel open... and keep your windows boarded.\"",
 	"...static...",
 	"",
-	"You have a way out. For now, you keep the radio on.",
+	"You have a way out. You just have to live long enough to take it.",
 ]
 
 var player: Player

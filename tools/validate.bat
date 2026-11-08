@@ -9,7 +9,8 @@ rem       memory soak test repeats full sessions to catch leaks
 rem  Optional: "validate.bat render" also runs the darkness + flashlight render
 rem  test (a game window opens for a few seconds).
 rem  Optional: "validate.bat scenarios" runs the Walker difficulty
-rem  scenarios S1-S6 and the 40-zombie performance test.
+rem  scenarios S1-S6, the 40-zombie performance test and the night siege
+rem  scenarios (logs\siege_scenarios.txt).
 rem  Optional: "validate.bat perf" runs the FPS benchmark on your GPU
 rem  (1/10/20/40 Walkers, yard + dark room, real map, V-Sync on/off, flashlight),
 rem  a quick comparison with the ANGLE graphics driver and a stutter check.
@@ -70,6 +71,10 @@ if /I "%~1"=="scenarios" (
   "%GODOT%" --headless --path "%PROJECT%" --fixed-fps 60 res://tests/scenarios/difficulty_scenarios.tscn >> "%LOG%" 2>&1
   findstr /C:"SCENARIOS COMPLETED" "%LOG%" >nul || set FAIL=1
   findstr /C:"S1 " /C:"S2 " /C:"S3 " /C:"S4 " /C:"S5 " /C:"S6 " /C:"frame time" "%LOG%"
+  echo [+] Night siege scenarios - Slice 1, report only - about 1 minute...
+  "%GODOT%" --headless --path "%PROJECT%" --fixed-fps 60 res://tests/scenarios/siege_scenarios.tscn > "%PROJECT%\logs\siege_scenarios.txt" 2>&1
+  findstr /C:"SIEGE SCENARIOS COMPLETED" "%PROJECT%\logs\siege_scenarios.txt" >nul || set FAIL=1
+  findstr /C:"PASSIVE" /C:"DEFEND" /C:"mode " "%PROJECT%\logs\siege_scenarios.txt"
 )
 
 if /I "%~1"=="perf" (

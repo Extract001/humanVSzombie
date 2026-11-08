@@ -282,6 +282,20 @@ This one session covers every open `[WIN-PLAY]` item from Phases 4–10. Play fr
 10. **Pause & quit:** Esc pauses (zombies and timers stop). Quit to the menu from the safehouse, Continue: stash, objectives, looted containers and backpacks all as you left them.
 11. **End:** note FPS and memory again. Memory should be about the same as at the start (a little higher is normal). Send Claude the notes and `logs\validate.log` / any errors from the Output panel.
 
+## Redesign Slice 1 — Day/night siege
+*Automated results (2026-11-08):* `[LINUX-AUTO]` 162/162 + both render tests + playthrough bot (now also sleeps, survives a real night and reaches day 2) + memory soak, VALIDATION PASSED. `[WEB-EXPORT]` headless Chrome: 0 errors.
+- [x] ✅ `[LINUX-AUTO]` Heat: a pistol shot = +1, running/zombie noises/night noises = 0; the horde estimate follows the formula and the 40-Walker cap
+- [x] ✅ `[LINUX-AUTO]` Cycle: 06:00 start → dusk → night (whole horde scheduled, spawns ≥ 360 px from you, heads for the windows) → dawn (day 2, Heat 0, summary pauses the game, autosave "dawn", horde gone)
+- [x] ✅ `[LINUX-AUTO]` Windows: start with 2 planks, hits crack and break planks, broken = open, planks cost 1 scrap and 1.2 s, walking away cancels (no cost)
+- [x] ✅ `[LINUX-AUTO]` A horde Walker breaks 2 planks in about 9 s plus walking, then climbs in; ordinary paths (and the bot) go round to the door
+- [x] ✅ `[LINUX-AUTO]` Night = darkness outdoors (not in the lamp-lit safehouse); restock never touches quest containers; siege state saves; a night save restarts at dusk; rescue only with the radio and 10 nights
+- [x] ✅ `[LINUX-AUTO]` Siege scenarios (report): standing still you are overrun every night (first window breaks after 27–52 s); a simple bat-and-boards defender bot takes 0 damage on nights 1–5 at low Heat, but 108–240 damage on night 3 with only 1 plank or on nights 5–10 with high Heat. **First-pass numbers: your play-test decides**
+- [ ] ⏳ `[WIN-PLAY]` **Night 1:** at dusk board the windows, survive the night, read the summary. Was it tense? Too easy? Too hard?
+- [ ] ⏳ `[WIN-PLAY]` **Heat:** a day with lots of shooting gives a clearly bigger, scarier night; a quiet day an easier one
+- [ ] ⏳ `[WIN-PLAY]` **Nights 2–4:** is there enough scrap? Do you want to play "one more night"? Write down what felt boring or unfair
+- [ ] ⏳ `[VISUAL]` Dusk colour, night darkness, safehouse lamp, planks on the windows, clock/Heat line at the top
+- [ ] ⏳ `[WIN-AUTO]` `validate.bat scenarios` → send `logs\siege_scenarios.txt`; `validate.bat perf` now also has "night" rows (40 Walkers + flashlight)
+
 ## Phase 12 — Release
 - [ ] `[WIN-PLAY]` 30-minute session with no crash and no memory growth trend (FPS counter shows memory when run from the editor)
 - [ ] `[WIN-PLAY]` Windows .exe runs on a clean machine (no Godot installed)

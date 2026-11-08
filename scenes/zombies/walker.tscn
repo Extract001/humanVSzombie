@@ -16,43 +16,43 @@ light_mode = 1
 [sub_resource type="CircleShape2D" id="CircleShape2D_5kp7i"]
 radius = 6.0
 
-[node name="Walker" type="CharacterBody2D" unique_id=1589696477]
+[node name="Walker" type="CharacterBody2D" unique_id=940211163]
 collision_layer = 4
-collision_mask = 7
+collision_mask = 39
 motion_mode = 1
 script = ExtResource("1_41k0o")
 data = ExtResource("2_rsgex")
 
-[node name="Shape" type="CollisionShape2D" parent="." unique_id=1801040226]
+[node name="Shape" type="CollisionShape2D" parent="." unique_id=788460822]
 shape = SubResource("CircleShape2D_c5s2p")
 
-[node name="Sprite" type="AnimatedSprite2D" parent="." unique_id=1846898657]
+[node name="Sprite" type="AnimatedSprite2D" parent="." unique_id=337589647]
 light_mask = 3
 sprite_frames = ExtResource("3_s1qs7")
 animation = &"idle_down"
 offset = Vector2(0, -9)
 
-[node name="Eyes" type="Sprite2D" parent="." unique_id=1794452006]
+[node name="Eyes" type="Sprite2D" parent="." unique_id=1495844523]
 material = SubResource("CanvasItemMaterial_ax3ro")
 texture = ExtResource("4_33u5r")
 offset = Vector2(0, -9)
 hframes = 4
 
-[node name="Health" type="Node" parent="." unique_id=1347987956]
+[node name="Health" type="Node" parent="." unique_id=1218456890]
 script = ExtResource("5_i5dfm")
 
-[node name="Hurtbox" type="Area2D" parent="." unique_id=1772680928 node_paths=PackedStringArray("health")]
+[node name="Hurtbox" type="Area2D" parent="." unique_id=996572733 node_paths=PackedStringArray("health")]
 collision_layer = 8
 collision_mask = 0
 monitoring = false
 script = ExtResource("6_fkwua")
 health = NodePath("../Health")
 
-[node name="Shape" type="CollisionShape2D" parent="Hurtbox" unique_id=44400926]
+[node name="Shape" type="CollisionShape2D" parent="Hurtbox" unique_id=1329157323]
 position = Vector2(0, -6)
 shape = SubResource("CircleShape2D_5kp7i")
 
-[node name="NavAgent" type="NavigationAgent2D" parent="." unique_id=1631165883]
+[node name="NavAgent" type="NavigationAgent2D" parent="." unique_id=160050373]
 path_desired_distance = 6.0
 target_desired_distance = 6.0
 radius = 6.0

@@ -13,6 +13,8 @@ extends CharacterBody2D
 signal died
 signal state_changed(new_state: State)
 signal door_banged(door: Door)
+## Slice 1: hit a safehouse barricade.
+signal barricade_hit(barricade: Barricade)
 
 enum State { IDLE, WANDER, INVESTIGATE, SEARCH, CHASE, ATTACK, STUNNED, DEAD }
 
@@ -53,6 +55,17 @@ var _knockback_decel: float = 0.0
 var _grunt_cooldown: float = 0.0
 var _investigate_left: float = 0.0
 var _door_bang_left: float = 0.0
+## Slice 1 (night siege): a horde Walker heads for this point (inside the safehouse, through a
+## window) whenever it has nothing better to do. Vector2.INF = a normal town Walker.
+var siege_goal: Vector2 = Vector2.INF
+var _barricade_hit_left: float = 0.0
+## Crossing a window link (navigation layer 2): head straight for the far side, don't re-path
+## halfway (the window gap itself isn't on the walkable mesh).
+var _link_exit: Vector2 = Vector2.INF
+var _link_left: float = 0.0
+const SIEGE: SiegeData = preload("res://data/siege/siege_data.tres")
+## A siege walk across the map can take a minute or more.
+const SIEGE_WALK_TIMEOUT: float = 120.0
 
 @onready var sprite: AnimatedSprite2D = $Sprite
 @onready var eyes: Sprite2D = $Eyes
@@ -70,6 +83,8 @@ func _ready() -> void:
 	home_position = global_position
 	health.setup(data.max_health)
 	health.died.connect(_on_died)
+	nav_agent.navigation_layers = 1 | NavigationBaker.WINDOW_NAV_LAYER  # Slice 1: may path through windows
+	nav_agent.link_reached.connect(_on_link_reached)
 	# Random start offsets so many zombies don't all think (or wander) on the same frame.
 	_think_timer = randf() * data.think_interval
 	_idle_left = randf_range(data.idle_time_min, data.idle_time_max)
@@ -123,6 +138,7 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 	_check_blocked_by_door(delta)
+	_check_blocked_by_barricade(delta)
 	_update_visuals(velocity.length() > 1.0)
 
 
@@ -144,7 +160,7 @@ func think() -> void:
 	var calm: bool = state == State.IDLE or state == State.WANDER
 	var far: bool = global_position.distance_squared_to(target.global_position) \
 		> data.dormant_distance * data.dormant_distance
-	is_dormant = calm and far
+	is_dormant = calm and far and not is_besieging()
 	if is_dormant:
 		target_visible = false
 		return
@@ -221,11 +237,29 @@ func _on_spotted_player() -> void:
 
 func _process_idle(delta: float) -> void:
 	velocity = Vector2.ZERO
+	if is_besieging():
+		_start_siege_walk()
+		return
 	if not wanders or is_dormant:
 		return
 	_idle_left -= delta
 	if _idle_left <= 0.0:
 		_start_wander()
+
+
+func is_besieging() -> bool:
+	return siege_goal != Vector2.INF
+
+
+## Slice 1: horde Walkers march on the safehouse (an "investigate" with a long patience).
+func _start_siege_walk() -> void:
+	if global_position.distance_to(siege_goal) <= ARRIVE_DISTANCE * 2.0:
+		_enter_search(siege_goal)
+		return
+	_move_goal = siege_goal
+	_investigate_left = SIEGE_WALK_TIMEOUT
+	_repath_left = 0.0
+	_set_state(State.INVESTIGATE)
 
 
 func _start_wander() -> void:
@@ -375,7 +409,16 @@ func is_staggered() -> bool:
 func _navigate(goal: Vector2, speed: float) -> bool:
 	if global_position.distance_to(goal) <= ARRIVE_DISTANCE:
 		velocity = Vector2.ZERO
+		_link_exit = Vector2.INF
 		return true
+	if _link_exit != Vector2.INF:
+		_link_left -= get_physics_process_delta_time()
+		if global_position.distance_to(_link_exit) < 3.0 or _link_left <= 0.0:
+			_link_exit = Vector2.INF   # through (or gave up pushing on intact boards): path again
+			_repath_left = 0.0
+		else:
+			_move_direct(_link_exit, speed)
+			return false
 	if _repath_left <= 0.0 or nav_agent.target_position.distance_to(goal) > REPATH_MOVE_THRESHOLD:
 		nav_agent.target_position = goal
 		_repath_left = data.repath_interval
@@ -391,6 +434,27 @@ func _move_direct(goal: Vector2, speed: float) -> void:
 	velocity = dir * speed
 	if dir != Vector2.ZERO:
 		facing = dir
+
+
+## Slice 1: pushing against a boarded window: hit the boards (every zombie_barricade_interval).
+## Uses the slide collisions, so it works even when the push stops the zombie dead.
+func _check_blocked_by_barricade(delta: float) -> void:
+	_barricade_hit_left = maxf(0.0, _barricade_hit_left - delta)
+	if _barricade_hit_left > 0.0 or state == State.STUNNED or state == State.ATTACK:
+		return
+	for i in get_slide_collision_count():
+		var b := get_slide_collision(i).get_collider() as Barricade
+		if b != null and not b.is_broken():
+			_barricade_hit_left = SIEGE.zombie_barricade_interval
+			facing = global_position.direction_to(b.center())
+			b.take_hit(SIEGE.zombie_barricade_damage)
+			barricade_hit.emit(b)
+			return
+
+
+func _on_link_reached(details: Dictionary) -> void:
+	_link_exit = details.get("link_exit_position", Vector2.INF)
+	_link_left = 4.0
 
 
 ## Pushing against a closed door: bang on it every 1.5 s (a warning for the player).
@@ -409,6 +473,7 @@ func _check_blocked_by_door(delta: float) -> void:
 
 
 func _set_state(new_state: State) -> void:
+	_link_exit = Vector2.INF
 	if state == new_state:
 		return
 	state = new_state

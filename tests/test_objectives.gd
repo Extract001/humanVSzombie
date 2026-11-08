@@ -130,19 +130,23 @@ func test_stash_unlimited_safe_on_death_and_full_bag() -> void:
 	game.queue_free()
 
 
+## Slice 1: the bed heals and skips to dusk (the day changes at dawn, after the night).
 func test_bed_heals_new_day_refused_near_zombies() -> void:
 	var game := _game()
 	await physics_frames(3)
 	var p := _player(game)
-	p.health.take_damage(60.0)
-	check(game.try_sleep(), "sleeps when no zombie is close")
-	check_eq(p.health.current_health, 100.0, "full heal")
-	check_eq(GameState.day, 2, "a new day")
 	var z := spawn_walker(game.get_node("World/Actors"), p.global_position + Vector2(100, 0), Vector2.LEFT)
 	await physics_frames(1)
 	check(not game.try_sleep(), "can't sleep with a zombie 100 px away")
-	check_eq(GameState.day, 2, "no new day")
+	check_eq(GameState.phase, GameState.Phase.DAY, "still day")
 	z.queue_free()
+	await physics_frames(1)
+	p.health.take_damage(60.0)
+	check(game.try_sleep(), "sleeps when no zombie is close")
+	check_eq(p.health.current_health, 100.0, "full heal")
+	check_eq(GameState.phase, GameState.Phase.DUSK, "sleeping skips to dusk")
+	check_eq(GameState.day, 1, "same day until dawn")
+	check(not game.try_sleep(), "no sleeping at dusk")
 	var bed: Node2D = game.get_node("World/Map/Bed")
 	var point: Node2D = game.get_node("World/Map/RespawnPoint")
 	check(point.global_position.distance_to(bed.global_position) < 40.0, "respawn point is beside the bed")

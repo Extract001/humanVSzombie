@@ -1,8 +1,31 @@
 # LAST SIGNAL — Game Design Document
 
-Version 0.3 (Phase 0, revised after second owner review 2026-11-08) · Engine: Godot 4.7.2 · Status: **direction approved by owner; corrections applied; Phase 1 approval pending**
+Version 0.4 (2026-11-08: **night siege redesign** approved by owner, see §0) · Engine: Godot 4.7.2 · Status: Phases 0–11 built; Slice 1 of the redesign in progress
 
 All numbers in this document are **first-pass tuning values**. They live in data files (`data/*.tres`), so they can be changed without code changes during play-testing.
+
+---
+
+## 0. Redesign: "Every night, the radio calls. Every night, they come." (approved 2026-11-08)
+
+The owner found the Phase 0–11 game not interesting enough: one short linear quest, one enemy type and no reason to come back. Approved direction: a **day/night siege loop** with four hooks. Everything in §1–15 still applies unless this section changes it.
+
+**Core loop (one day):**
+- **Day** (5 min): scavenge. Loud noises raise **Heat**. The HUD shows the clock, Heat and "tonight: ~N of them".
+- **Dusk** (45 s): get home, nail planks over the safehouse windows (E, 1 scrap each, max 3).
+- **Night** (2.5 min): the horde (base 4, +1.5 per night, +0.75 per Heat, capped at 40 Walkers awake) walks in from the map edges and attacks the three windows. The front door can't be broken; windows can. Outside it's dark (Walkers see you at half range; a lit flashlight gives you away).
+- **Dawn**: the horde leaves, summary screen, the night counts, Heat resets, 5 emptied town containers get fresh loot (never quest containers), autosave.
+- **Goal:** repair the radio (existing objective chain) **and** survive 10 nights → the convoy rescues you. Then "Keep surviving" (endless).
+
+**Hooks (owner selected all four):**
+1. **Your Echo** (Slice 2): when you die you rise as a zombie carrying your backpack and gun; kill your past self to get your gear back.
+2. **The town listens / Heat** (Slice 1): every loud noise by day (≥ 200 px: gunshots, forcing locks) makes tonight's horde bigger.
+3. **New zombie types** (Slice 3): Screamer (shriek wakes the block), Brute (breaks barricades and doors), Crawler (hides in dark rooms), Runner (night only).
+4. **Survivors + throwables** (Slice 4/5): rescued survivors live in the safehouse with jobs (Doctor heals overnight, Mechanic strengthens boards, Kid finds loot) and can die in raids; bottles/alarm clocks/firecrackers as noise lures.
+
+**Slices** (each one playable and play-tested before the next): 1 day/night + siege + barricades + Heat · 2 Echo + perk cards + morning score · 3 new zombie types · 4 survivors + radio missions · 5 throwables/crafting, game feel (hit-stop, combos), endless + daily seed. Publishing (old Phase 12) comes after.
+
+**Fair design:** the pull comes from clear goals, risk/reward and growing stronger, never from manipulative tricks (no fake rewards, no login timers, no paid anything).
 
 ---
 
@@ -336,4 +359,7 @@ Wind/city ambience bed · distant groans (randomised, positional) · close groan
 | 2026-11-08 | Roofs cover building interiors only; walls and doors stay visible from outside | Claude (design detail) |
 | 2026-11-08 | Medical/pharmacy symbol = green cross (the red-cross emblem is legally protected) | Claude (legal safety) |
 | 2026-11-08 | Doors: Walkers bang on closed doors (warning sound) but can't open or break them; doors aren't part of the navigation mesh; locked gates are | Claude (implementation detail) |
+| 2026-11-08 | **Redesign: day/night siege loop** with Echo, Heat, new zombie types, survivors + throwables; built in 5 playable slices; publishing after | Owner |
+| 2026-11-08 | Slice 1 first-pass values (data/siege/siege_data.tres): day 300 s, dusk 45 s, night 150 s; horde 4 + 1.5/night + 0.75/Heat; pistol shot = +1 Heat; 3 windows, 30 HP per plank, max 3, start 2; Walker hits boards for 10 every 1.5 s. Measured with siege scenarios; **awaiting owner play-test** | Claude (data) |
+| 2026-11-08 | Bed now = full heal + sleep until dusk + save (the day changes at dawn). The radio broadcast now promises the convoy after night 10 | Claude (design detail) |
 | 2026-11-08 | Zombie group alert: spotting groan = 140 px noise; hearing a groan → investigate only (no chain reactions). Wander radius 80 px, dormant beyond 700 px | Claude (implementation detail) |

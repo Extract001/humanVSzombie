@@ -47,6 +47,8 @@ func on_zombie_killed(z: Zombie) -> void:
 		AudioManager.play_ui(preload("res://assets/audio/sfx/streak.wav"), -8.0 + mini(streak, 5))
 	streak_changed.emit(streak)
 	_splat(z.global_position)
+	if Perks.kill_heal() > 0.0 and player != null and not player.is_dead():
+		player.health.heal(Perks.kill_heal())   # Slice 2: Bloodlust
 
 
 func on_objective_completed() -> void:

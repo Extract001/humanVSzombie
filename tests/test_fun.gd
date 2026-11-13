@@ -73,6 +73,7 @@ func test_records_kept_only_when_allowed() -> void:
 	Settings.load_settings()
 	check_eq(Settings.best_score, 500, "saved with the settings")
 	GameState.records_disabled = true
+	GameState.intro_disabled = true
 	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://test_records.cfg"))
 	Settings.config_path = old_path
 	Settings.best_score = old_best

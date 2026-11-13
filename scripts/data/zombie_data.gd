@@ -9,6 +9,8 @@ extends Resource
 @export var tint: Color = Color.WHITE
 ## Score for killing one (fun pass).
 @export var score: int = 10
+## The yellow eye glow drawn over the sprite (off for Your Echo, which uses the player's sprite).
+@export var glowing_eyes: bool = true
 
 @export_group("Health")
 @export var max_health: float = 60.0

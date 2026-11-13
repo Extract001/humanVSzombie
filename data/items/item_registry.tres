@@ -11,8 +11,10 @@
 [ext_resource type="Resource" path="res://data/items/battery.tres" id="9_i"]
 [ext_resource type="Resource" path="res://data/items/bolt_cutters.tres" id="10_i"]
 [ext_resource type="Resource" path="res://data/items/radio_part.tres" id="11_i"]
+[ext_resource type="Resource" path="res://data/items/shotgun.tres" id="12_i"]
+[ext_resource type="Resource" path="res://data/items/fire_axe.tres" id="13_i"]
 [ext_resource type="Script" path="res://scripts/data/item_data.gd" id="20_idata"]
 
 [resource]
 script = ExtResource("1_reg")
-items = Array[ExtResource("20_idata")]([ExtResource("2_i"), ExtResource("3_i"), ExtResource("4_i"), ExtResource("5_i"), ExtResource("6_i"), ExtResource("7_i"), ExtResource("8_i"), ExtResource("9_i"), ExtResource("10_i"), ExtResource("11_i")])
+items = Array[ExtResource("20_idata")]([ExtResource("2_i"), ExtResource("3_i"), ExtResource("4_i"), ExtResource("5_i"), ExtResource("6_i"), ExtResource("7_i"), ExtResource("8_i"), ExtResource("9_i"), ExtResource("10_i"), ExtResource("11_i"), ExtResource("12_i"), ExtResource("13_i")])

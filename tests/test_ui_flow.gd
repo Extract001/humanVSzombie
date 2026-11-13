@@ -240,3 +240,26 @@ func test_top_right_hud_labels_do_not_overlap() -> void:
 	Settings.show_fps = keep
 	Settings.apply()
 	game.queue_free()
+
+
+## Slice 2: a new game opens with the radio transmission; any key finishes it, then starts.
+func test_new_game_intro_transmission() -> void:
+	GameState.intro_disabled = false
+	GameState.new_game(1)
+	SaveSystem.fresh_start = true
+	var game: Node = load("res://scenes/main/game.tscn").instantiate()
+	add_child(game)
+	await physics_frames(3)
+	var intro: CanvasLayer = game.get_node_or_null("IntroPanel")
+	check(intro != null and intro.visible, "the transmission plays")
+	check(get_tree().paused, "the game waits")
+	intro.advance()
+	check(intro.is_done_typing(), "first key: the whole text")
+	check(intro.find_child("Transmission", true, false).text.contains("Survive ten nights"), "it says what to do")
+	intro.advance()
+	check(not get_tree().paused, "second key: play")
+	await physics_frames(2)
+	check(game.get_node_or_null("IntroPanel") == null, "gone")
+	GameState.intro_disabled = true
+	get_tree().paused = false
+	game.queue_free()

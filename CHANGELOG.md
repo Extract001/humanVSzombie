@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Slice 2 — Perks, Your Echo, shotgun & fire axe, intro (2026-11-13) — IMPLEMENTED + TESTED (automated); not yet VERIFIED
+From my rating's "what would raise it": progression, variety and a story hook.
+- **Perk cards every dawn:** after the night summary pick 1 of 3 cards (click or keys 1/2/3); each perk can be taken twice. 13 perks: Quiet Feet, Iron Lungs, Fleet Foot, Thick Skin, Heavy Hands, Sharpshooter, Steady Hands, Scavenger, Carpenter, Deep Pockets, Night Owl, Bloodlust, Shove Master. Your perks are listed in the pause menu. Saved.
+- **Your Echo:** die carrying things and, after a moment, your dead self gets up (your clothes, pale, "YOUR ECHO") and wanders off with your backpack. It's tougher (150 HP) and quicker than a Walker. Kill it (+100) and the backpack drops where it falls. The orange arrow follows it; it's saved.
+- **Pump shotgun** (house A's wardrobe box, west): 6 pellets, 4 shells, devastating up close, and LOUD (+1.25 Heat a shot). Shells also turn up in car trunks.
+- **Fire axe** (house C's toolbox, east): two hits drop a Walker and it often knocks them down.
+- New weapons go straight to a weapon slot (keys 3 and 4), even with a full bag, and stay with you when you die.
+- **Opening radio transmission** on a new game: what happened, what to do. Any key skips.
+- New original art (shotgun, fire axe, two item icons) and sounds (shotgun blast, axe chop).
+- Tests: 187 (16 new: `test_perks`, `test_echo`, `test_weapons_s2`, intro).
+
 ### Full-screen & responsive display (2026-11-09) — IMPLEMENTED + TESTED (automated); not yet VERIFIED
 You said the game didn't fill your laptop screen.
 - **Starts in fullscreen** on Windows (once also for your existing settings; after that Settings → Fullscreen is remembered). Browsers still need a click (browser rule).

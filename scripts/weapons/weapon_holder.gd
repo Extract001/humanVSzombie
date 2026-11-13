@@ -17,6 +17,8 @@ signal reload_cancelled
 ## Emitted for every attack. The noise system (Phase 3) listens to this.
 signal attacked(origin: Vector2, weapon: WeaponData)
 signal dry_fired
+## Slice 2: a new weapon was picked up (shotgun, fire axe).
+signal weapon_added(slot: int, weapon: WeaponData)
 
 const WORLD_MASK: int = 1        # physics layer 1: walls and solid props
 const HURTBOX_MASK: int = 8      # physics layer 4: hurtboxes of zombies
@@ -36,6 +38,7 @@ var body: Node2D
 
 var _cooldown_left: float = 0.0
 var _reload_left: float = 0.0
+var _reload_total: float = 0.0
 var _pending_melee_left: float = -1.0
 var _pending_origin: Vector2
 var _pending_dir: Vector2
@@ -56,6 +59,23 @@ func setup(owner_body: Node2D, owner_inventory: Inventory) -> void:
 	current = 0
 	weapon_changed.emit(current, current_weapon())
 	_emit_ammo()
+
+
+func has_weapon(id: StringName) -> bool:
+	for w in slots:
+		if w.id == id:
+			return true
+	return false
+
+
+## Adds a weapon to the next slot, fully loaded. Returns false if you already have it.
+func add_weapon(w: WeaponData, loaded: int = -1) -> bool:
+	if w == null or has_weapon(w.id):
+		return false
+	slots.append(w)
+	rounds_in_mag.append(w.magazine_size if loaded < 0 else clampi(loaded, 0, w.magazine_size))
+	weapon_added.emit(slots.size() - 1, w)
+	return true
 
 
 func current_weapon() -> WeaponData:
@@ -125,8 +145,9 @@ func start_reload() -> bool:
 	if loaded_rounds() >= w.magazine_size or reserve_for(w) <= 0:
 		return false
 	is_reloading = true
-	_reload_left = w.reload_time
-	reload_started.emit(w.reload_time)
+	_reload_total = w.reload_time * Perks.reload_time_mult()   # Slice 2: Steady Hands
+	_reload_left = _reload_total
+	reload_started.emit(_reload_total)
 	return true
 
 
@@ -163,9 +184,9 @@ func cycle(step: int) -> bool:
 
 func reload_progress() -> float:
 	var w: WeaponData = current_weapon()
-	if not is_reloading or w == null or w.reload_time <= 0.0:
+	if not is_reloading or w == null or _reload_total <= 0.0:
 		return 0.0
-	return 1.0 - _reload_left / w.reload_time
+	return 1.0 - _reload_left / _reload_total
 
 
 func tick(delta: float) -> void:
@@ -203,7 +224,7 @@ func _fire_ray(origin: Vector2, direction: Vector2, w: WeaponData) -> void:
 		end = hit["position"]
 		var collider: Object = hit["collider"]
 		if collider is Hurtbox:
-			(collider as Hurtbox).receive_hit(w.damage, body, direction * w.knockback, 0.0)
+			(collider as Hurtbox).receive_hit(w.damage * Perks.gun_damage_mult(), body, direction * w.knockback, 0.0)
 			AudioManager.play_at(w.hit_sound, end, -3.0)
 		else:
 			Fx.burst(body.get_parent(), end - direction * 2.0, Fx.DUST, 6, 40.0, -direction, 0.3)
@@ -221,7 +242,7 @@ func _resolve_melee() -> void:
 	for hb in targets:
 		var stun: float = w.heavy_stun_time if _rng.randf() < w.heavy_stun_chance else 0.0
 		var push: Vector2 = _pending_origin.direction_to(hb.global_position) * w.knockback
-		hb.receive_hit(w.damage, body, push, stun)
+		hb.receive_hit(w.damage * Perks.melee_damage_mult(), body, push, stun)
 	if not targets.is_empty():
 		AudioManager.play_at(w.hit_sound, targets[0].global_position)
 

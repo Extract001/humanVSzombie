@@ -1,0 +1,125 @@
+[gd_resource type="Resource" script_class="PerkPool" load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/perk_pool.gd" id="1_pool"]
+[ext_resource type="Script" path="res://scripts/data/perk_data.gd" id="2_perk"]
+
+[sub_resource type="Resource" id="perk_0"]
+script = ExtResource("2_perk")
+id = &"quiet_feet"
+title = "Quiet Feet"
+description = "Running makes {v} less noise."
+amount = 0.3
+max_stacks = 2
+percent = true
+
+[sub_resource type="Resource" id="perk_1"]
+script = ExtResource("2_perk")
+id = &"iron_lungs"
+title = "Iron Lungs"
+description = "{v} more stamina and faster recovery."
+amount = 0.3
+max_stacks = 2
+percent = true
+
+[sub_resource type="Resource" id="perk_2"]
+script = ExtResource("2_perk")
+id = &"fleet_foot"
+title = "Fleet Foot"
+description = "Walk and run {v} faster."
+amount = 0.1
+max_stacks = 2
+percent = true
+
+[sub_resource type="Resource" id="perk_3"]
+script = ExtResource("2_perk")
+id = &"thick_skin"
+title = "Thick Skin"
+description = "+{v} max health."
+amount = 25.0
+max_stacks = 2
+percent = false
+
+[sub_resource type="Resource" id="perk_4"]
+script = ExtResource("2_perk")
+id = &"heavy_hands"
+title = "Heavy Hands"
+description = "Bat and axe hit {v} harder."
+amount = 0.3
+max_stacks = 2
+percent = true
+
+[sub_resource type="Resource" id="perk_5"]
+script = ExtResource("2_perk")
+id = &"sharpshooter"
+title = "Sharpshooter"
+description = "Guns hit {v} harder."
+amount = 0.25
+max_stacks = 2
+percent = true
+
+[sub_resource type="Resource" id="perk_6"]
+script = ExtResource("2_perk")
+id = &"steady_hands"
+title = "Steady Hands"
+description = "Reload {v} faster."
+amount = 0.3
+max_stacks = 2
+percent = true
+
+[sub_resource type="Resource" id="perk_7"]
+script = ExtResource("2_perk")
+id = &"scavenger"
+title = "Scavenger"
+description = "Search {v} faster."
+amount = 0.35
+max_stacks = 2
+percent = true
+
+[sub_resource type="Resource" id="perk_8"]
+script = ExtResource("2_perk")
+id = &"carpenter"
+title = "Carpenter"
+description = "Planks are {v} tougher."
+amount = 0.5
+max_stacks = 2
+percent = true
+
+[sub_resource type="Resource" id="perk_9"]
+script = ExtResource("2_perk")
+id = &"deep_pockets"
+title = "Deep Pockets"
+description = "+{v} bag slots."
+amount = 3.0
+max_stacks = 2
+percent = false
+
+[sub_resource type="Resource" id="perk_10"]
+script = ExtResource("2_perk")
+id = &"night_owl"
+title = "Night Owl"
+description = "Flashlight battery lasts {v} longer."
+amount = 0.6
+max_stacks = 2
+percent = true
+
+[sub_resource type="Resource" id="perk_11"]
+script = ExtResource("2_perk")
+id = &"bloodlust"
+title = "Bloodlust"
+description = "Every kill heals {v} health."
+amount = 4.0
+max_stacks = 2
+percent = false
+
+[sub_resource type="Resource" id="perk_12"]
+script = ExtResource("2_perk")
+id = &"shove_master"
+title = "Shove Master"
+description = "Shove {v} more often, and they stagger longer."
+amount = 0.35
+max_stacks = 2
+percent = true
+
+[resource]
+script = ExtResource("1_pool")
+perks = Array[ExtResource("2_perk")]([SubResource("perk_0"), SubResource("perk_1"), SubResource("perk_2"), SubResource("perk_3"), SubResource("perk_4"), SubResource("perk_5"), SubResource("perk_6"), SubResource("perk_7"), SubResource("perk_8"), SubResource("perk_9"), SubResource("perk_10"), SubResource("perk_11"), SubResource("perk_12")])

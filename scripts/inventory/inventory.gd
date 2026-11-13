@@ -48,6 +48,9 @@ func space_for(item_id: StringName) -> int:
 		if s.id == item_id:
 			room += per_stack - int(s.qty)
 	room += (capacity_slots - slots.size()) * per_stack
+	var item: ItemData = ItemRegistry.get_item(item_id)
+	if item != null and item.weapon != null:
+		return 99   # weapons skip the bag (Slice 2)
 	return room
 
 
@@ -57,6 +60,12 @@ func add_item(item_id: StringName, quantity: int) -> int:
 		return 0
 	var left: int = quantity
 	var per_stack: int = stack_size(item_id)
+	var item: ItemData = ItemRegistry.get_item(item_id)
+	if item != null and item.weapon != null:
+		# Slice 2: weapons never need bag space (the player moves them to a weapon slot at once).
+		slots.append({"id": item_id, "qty": quantity})
+		_changed(item_id)
+		return 0
 	for s in slots:  # top up existing stacks first
 		if left == 0:
 			break

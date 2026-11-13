@@ -19,7 +19,8 @@ var world_seed: int = 0
 var started: bool = false
 ## container_id -> Array of {"id": StringName, "qty": int}
 var containers: Dictionary = {}
-## pile_id -> {"position": Vector2, "backpack": bool}
+## pile_id -> {"position": Vector2, "backpack": bool, "echo": bool}
+## Slice 2: echo = true while Your Echo carries this backpack (no pile in the world until it dies).
 var piles: Dictionary = {}
 var stats: Dictionary = {"kills": 0, "deaths": 0}
 ## Seconds left in the flashlight's battery; -1 = not set yet (the player fills it from PlayerStats).
@@ -52,7 +53,12 @@ signal score_changed(score: int)
 var score: int = 0
 ## Tests, bots and tools: no random street spawns, never write your best score.
 var street_spawns_disabled: bool = false
+## Slice 2: perk cards picked at dawn: perk id -> stacks (saved).
+signal perks_changed
+var perks: Dictionary = {}
 var records_disabled: bool = false
+## Tests, bots and tools skip the opening transmission (it pauses the game).
+var intro_disabled: bool = false
 
 var _next_pile: int = 1
 
@@ -76,6 +82,7 @@ func new_game(seed_value: int = -1) -> void:
 	barricades = {}
 	restocks = {}
 	score = 0
+	perks = {}
 	_next_pile = 1
 	piles_changed.emit()
 
@@ -148,7 +155,7 @@ func create_pile(position: Vector2, items: Array, backpack: bool) -> StringName:
 	for e in items:
 		_add_to(copy, e.id, int(e.qty))
 	containers[id] = copy
-	piles[id] = {"position": position, "backpack": backpack}
+	piles[id] = {"position": position, "backpack": backpack, "echo": false}
 	piles_changed.emit()
 	return id
 
@@ -168,6 +175,11 @@ func add_heat(amount: float) -> void:
 		return
 	heat += amount
 	heat_changed.emit(heat)
+
+
+func add_perk(id: StringName) -> void:
+	perks[id] = int(perks.get(id, 0)) + 1
+	perks_changed.emit()
 
 
 func add_score(points: int) -> void:
@@ -302,7 +314,8 @@ func to_dict() -> Dictionary:
 		cont[String(id)] = _items_out(containers[id])
 	var pl := {}
 	for id in piles:
-		pl[String(id)] = {"x": piles[id].position.x, "y": piles[id].position.y, "backpack": piles[id].backpack}
+		pl[String(id)] = {"x": piles[id].position.x, "y": piles[id].position.y, "backpack": piles[id].backpack,
+			"echo": bool(piles[id].get("echo", false))}
 	var taken := {}
 	for cid in taken_log:
 		var row := {}
@@ -331,6 +344,7 @@ func to_dict() -> Dictionary:
 		"barricades": _string_keys(barricades),
 		"restocks": _string_keys(restocks),
 		"score": score,
+		"perks": _string_keys(perks),
 	}
 
 
@@ -345,7 +359,8 @@ func from_dict(d: Dictionary) -> void:
 	piles.clear()
 	var pl: Dictionary = d.get("piles", {})
 	for id in pl:
-		piles[StringName(id)] = {"position": Vector2(float(pl[id].x), float(pl[id].y)), "backpack": bool(pl[id].backpack)}
+		piles[StringName(id)] = {"position": Vector2(float(pl[id].x), float(pl[id].y)), "backpack": bool(pl[id].backpack),
+			"echo": bool(pl[id].get("echo", false))}
 	_next_pile = int(d.get("next_pile", piles.size() + 1))
 	stats = {}
 	var st_in: Dictionary = d.get("stats", {})
@@ -381,6 +396,10 @@ func from_dict(d: Dictionary) -> void:
 	for id in bd:
 		barricades[StringName(id)] = float(bd[id])
 	score = int(d.get("score", 0))
+	perks.clear()
+	var pk: Dictionary = d.get("perks", {})
+	for id in pk:
+		perks[StringName(id)] = int(pk[id])
 	restocks.clear()
 	var rs: Dictionary = d.get("restocks", {})
 	for id in rs:

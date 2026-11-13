@@ -512,4 +512,4 @@ func _update_visuals(is_moving: bool) -> void:
 		sprite.play(anim)
 	# Eyes are unshaded, so they stay readable in the dark. Hidden when facing away.
 	eyes.frame = ["down", "left", "right", "up"].find(dir_name)
-	eyes.visible = dir_name != "up"
+	eyes.visible = dir_name != "up" and data.glowing_eyes

@@ -35,6 +35,8 @@ var dawn_panel: CanvasLayer
 ## Fun pass
 var score_keeper: ScoreKeeper
 var population: Population
+## Slice 2
+var echo_manager: EchoManager
 var _last_backpack: StringName = &""
 
 var elapsed: float = 0.0
@@ -93,6 +95,10 @@ func _ready() -> void:
 	population.name = "Population"
 	add_child(population)
 	population.setup(self, player, world.get_node("Actors"))
+	echo_manager = EchoManager.new()
+	echo_manager.name = "EchoManager"
+	add_child(echo_manager)
+	echo_manager.setup(self, player, world.get_node("Actors"))
 
 	Soundscape.player = player
 	hud.bind(player)
@@ -189,6 +195,18 @@ func _wants_perf_log() -> bool:
 	return OS.get_cmdline_user_args().has("--perf-log")
 
 
+## Slice 2: the opening radio transmission (new games only).
+func _play_intro() -> void:
+	var intro := CanvasLayer.new()
+	intro.name = "IntroPanel"
+	intro.set_script(load("res://scripts/ui/intro_panel.gd"))
+	add_child(intro)
+	intro.play(player)
+	intro.finished.connect(func() -> void:
+		get_tree().call_group(&"hud", &"show_toast", "Follow the arrow. Board up the windows before dark (E, 1 scrap).")
+		intro.queue_free())
+
+
 func on_zombie_killed(_z: Zombie) -> void:
 	_on_zombie_died()
 
@@ -228,13 +246,13 @@ func _sync_piles() -> void:
 		var c := node as LootContainer
 		if c == null or c.is_queued_for_deletion():
 			continue
-		if GameState.piles.has(c.container_id):
+		if GameState.piles.has(c.container_id) and not GameState.piles[c.container_id].get("echo", false):
 			existing[c.container_id] = true
 		else:
 			c.queue_free()
 	for id in GameState.piles:
-		if existing.has(id):
-			continue
+		if existing.has(id) or GameState.piles[id].get("echo", false):
+			continue   # Slice 2: Your Echo is carrying this one
 		var data: Dictionary = GameState.piles[id]
 		var pile: LootContainer = PILE_SCENE.instantiate()
 		pile.name = String(id)
@@ -371,8 +389,11 @@ func _restore_from_save() -> void:
 		if SaveSystem.fresh_start:   # a brand-new game replaces the old save straight away
 			SaveSystem.fresh_start = false
 			save_now.call_deferred("new_game")
-			get_tree().call_group.call_deferred(&"hud", &"show_toast",
-				"Scavenge by day. At night they come for your safehouse: board up the windows (E, 1 scrap).")
+			if not GameState.intro_disabled:
+				_play_intro.call_deferred()
+			else:
+				get_tree().call_group.call_deferred(&"hud", &"show_toast",
+					"Scavenge by day. At night they come for your safehouse: board up the windows (E, 1 scrap).")
 		return
 	var d: Dictionary = SaveSystem.pending_player
 	SaveSystem.pending_player = {}

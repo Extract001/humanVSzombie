@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_item"]
+[ext_resource type="Resource" path="res://data/weapons/fire_axe.tres" id="2_w"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"fire_axe"
+display_name = "Fire axe"
+description = "Heavy and slow. Two hits drop a Walker; often knocks them off their feet."
+category = 4
+max_stack = 1
+icon_frame = 11
+heal_amount = 0.0
+heal_duration = 0.0
+is_quest_item = false
+weapon = ExtResource("2_w")

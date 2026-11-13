@@ -10,6 +10,7 @@ func _ready() -> void:
 	SaveSystem.path = "user://tool_save.json"
 	GameState.street_spawns_disabled = true  # fun pass: measure the placed/horde zombies only
 	GameState.records_disabled = true
+	GameState.intro_disabled = true
 	_vp = get_viewport().get_viewport_rid()
 	RenderingServer.viewport_set_measure_render_time(_vp, true)
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)

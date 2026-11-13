@@ -9,6 +9,8 @@ signal closed
 var game: Node
 var resume_button: Button
 var save_note: Label
+## Slice 2: your perks so far.
+var perks_note: Label
 
 
 func _ready() -> void:
@@ -29,6 +31,11 @@ func _ready() -> void:
 	save_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	save_note.custom_minimum_size = Vector2(160, 0)
 	box.add_child(save_note)
+	perks_note = UiKit.label("", 10, Color(1, 0.88, 0.45))
+	perks_note.name = "PerksNote"
+	perks_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	perks_note.custom_minimum_size = Vector2(160, 0)
+	box.add_child(perks_note)
 
 
 func bind(g: Node) -> void:
@@ -41,6 +48,7 @@ func bind(g: Node) -> void:
 func pause() -> void:
 	save_note.text = "Leaving now saves the game." if game.is_in_safehouse() \
 		else "Not in the safehouse: progress since the last save (safehouse, bed) will be lost."
+	perks_note.text = "Perks: " + Perks.summary()
 	visible = true
 	get_tree().paused = true
 	resume_button.grab_focus()

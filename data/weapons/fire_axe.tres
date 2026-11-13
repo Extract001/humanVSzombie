@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_wd"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fire_axe.png" id="2_icon"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/bat_swing.wav" id="3_swing"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/axe_hit.wav" id="4_hit"]
+
+[resource]
+script = ExtResource("1_wd")
+id = &"fire_axe"
+display_name = "Fire axe"
+kind = 0
+icon = ExtResource("2_icon")
+damage = 45.0
+cooldown = 0.85
+attack_duration = 0.45
+automatic = true
+range_px = 30.0
+knockback = 170.0
+move_speed_multiplier = 0.45
+noise_radius = 100.0
+melee_arc_degrees = 90.0
+hit_delay = 0.18
+heavy_stun_chance = 0.35
+heavy_stun_time = 0.9
+magazine_size = 0
+reload_time = 0.0
+spread_degrees = 0.0
+pellets = 1
+ammo_item_id = &""
+attack_sound = ExtResource("3_swing")
+hit_sound = ExtResource("4_hit")

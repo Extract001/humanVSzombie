@@ -12,7 +12,7 @@ const REBINDABLE: Array = [
 	[&"move_up", "Move up"], [&"move_down", "Move down"], [&"move_left", "Move left"], [&"move_right", "Move right"],
 	[&"run", "Run"], [&"attack", "Attack / fire"], [&"shove", "Quick shove"], [&"reload", "Reload"],
 	[&"interact", "Use / interact"], [&"flashlight", "Flashlight"], [&"inventory", "Inventory"],
-	[&"weapon_1", "Weapon 1"], [&"weapon_2", "Weapon 2"],
+	[&"weapon_1", "Weapon 1"], [&"weapon_2", "Weapon 2"], [&"weapon_3", "Weapon 3"], [&"weapon_4", "Weapon 4"],
 ]
 
 var config_path: String = DEFAULT_PATH

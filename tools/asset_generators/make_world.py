@@ -289,7 +289,7 @@ def safehouse():
 
 # ---------------- item icons (16x16) ----------------
 def items():
-    sheet = Canvas(160, 16)
+    sheet = Canvas(192, 16)
     def icon(i, draw):
         a = Canvas(16, 16); draw(a); a.outline(); sheet.paste(a, i * 16, 0)
     def can(a):
@@ -319,7 +319,14 @@ def items():
         for x in (5, 8, 11): a.rect(x - 1, 7, 2, 2, (40, 40, 40))
         for x in range(4, 13, 2): a.put(x, 13, (196, 170, 90)); a.put(x, 14, (196, 170, 90))
         a.put(6, 10, (210, 80, 60)); a.put(9, 10, (230, 200, 110))
-    for i, d in enumerate([can, water, bandage, medkit, ammo_p, ammo_s, scrap, battery, cutters, radio_part]):
+    def shotgun(a):   # Slice 2
+        a.rect(2, 8, 4, 3, (120, 84, 50)); a.hline(2, 8, 4, (150, 108, 66))
+        a.rect(6, 7, 8, 2, (64, 66, 70)); a.hline(6, 7, 8, (104, 106, 112)); a.rect(7, 9, 4, 2, (134, 96, 58)); a.rect(5, 8, 1, 3, (52, 50, 50))
+    def fire_axe(a):
+        for i in range(9):
+            a.put(3 + i, 13 - i, (132, 94, 56)); a.put(4 + i, 13 - i, (164, 120, 74))
+        a.rect(9, 2, 5, 5, (176, 46, 40)); a.hline(9, 2, 5, (204, 70, 58)); a.vline(13, 2, 5, (196, 200, 206))
+    for i, d in enumerate([can, water, bandage, medkit, ammo_p, ammo_s, scrap, battery, cutters, radio_part, shotgun, fire_axe]):
         icon(i, d)
     sheet.save(f"{OUT}/assets/sprites/items.png")
 

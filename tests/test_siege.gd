@@ -21,7 +21,7 @@ func _window(game: Node, id: String) -> Barricade:
 
 func _close_dawn(game: Node) -> void:
 	if game.dawn_panel.visible:
-		game.dawn_panel.close()
+		game.dawn_panel.pick_first_and_close()
 	get_tree().paused = false
 
 

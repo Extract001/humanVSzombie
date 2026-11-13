@@ -87,14 +87,19 @@ func center() -> Vector2:
 	return global_position + span() * 0.5
 
 
+## Health of one plank (Slice 2: the Carpenter perk makes them tougher).
+static func plank_health() -> float:
+	return SIEGE.plank_health * Perks.plank_health_mult()
+
+
 func health() -> float:
 	if not GameState.barricades.has(barricade_id):
-		GameState.barricades[barricade_id] = SIEGE.start_planks * SIEGE.plank_health
+		GameState.barricades[barricade_id] = SIEGE.start_planks * plank_health()
 	return float(GameState.barricades[barricade_id])
 
 
 func planks() -> int:
-	return int(ceil(health() / SIEGE.plank_health - 0.001))
+	return int(ceil(health() / plank_health() - 0.001))
 
 
 func is_broken() -> bool:
@@ -122,13 +127,13 @@ func add_plank() -> bool:
 	if planks() >= SIEGE.max_planks:
 		return false
 	# A new plank also tops the damaged one up: health = (planks + 1) full planks.
-	GameState.barricades[barricade_id] = float(mini(planks() + 1, SIEGE.max_planks)) * SIEGE.plank_health
+	GameState.barricades[barricade_id] = float(mini(planks() + 1, SIEGE.max_planks)) * plank_health()
 	refresh()
 	return true
 
 
 func set_planks(n: int) -> void:
-	GameState.barricades[barricade_id] = float(clampi(n, 0, SIEGE.max_planks)) * SIEGE.plank_health
+	GameState.barricades[barricade_id] = float(clampi(n, 0, SIEGE.max_planks)) * plank_health()
 	refresh()
 
 
@@ -210,7 +215,7 @@ func _draw_planks() -> void:
 		n = 1
 	var frac: float = 1.0
 	if not Engine.is_editor_hint() and n > 0:
-		frac = (health() - (n - 1) * SIEGE.plank_health) / SIEGE.plank_health
+		frac = (health() - (n - 1) * plank_health()) / plank_health()
 	var wood := Color(0.55, 0.39, 0.22).lerp(Color(1, 0.9, 0.8), _hit_flash * 2.0)
 	for i in n:
 		var damaged: bool = i == n - 1 and frac < 0.99

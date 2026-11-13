@@ -58,7 +58,8 @@ func _ready() -> void:
 func get_search_time() -> float:
 	if is_pile:
 		return 0.0
-	return search_time if search_time >= 0.0 else float(SEARCH_TIMES.get(container_type, DEFAULT_SEARCH_TIME))
+	var t: float = search_time if search_time >= 0.0 else float(SEARCH_TIMES.get(container_type, DEFAULT_SEARCH_TIME))
+	return t * Perks.search_time_mult()   # Slice 2: Scavenger
 
 
 func all_guaranteed_items() -> Dictionary:

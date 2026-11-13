@@ -311,6 +311,16 @@ This one session covers every open `[WIN-PLAY]` item from Phases 4–10. Play fr
 - [x] ✅ `[VISUAL]` (Claude, Linux) Menu, settings, HUD, inventory and dawn screens at 1366×768, 2560×1080 and 1024×768 fill the screen with nothing cut off; web build canvas fills 1366×768 and 1100×700 browser windows
 - [ ] ⏳ `[WIN-PLAY]` On your laptop: the game fills the whole screen, no black bars; Settings → Fullscreen off gives a window you can resize and it still fills; text readable
 
+## Slice 2 — Perks, Your Echo, shotgun & axe, intro
+*Automated results (2026-11-13):* `[LINUX-AUTO]` 187/187 + both render tests + playthrough bot (5 seeds + a real night) + memory soak + scenarios, VALIDATION PASSED.
+- [x] ✅ `[LINUX-AUTO]` Perks: 3 different cards, maxed perks never offered; effects measured (Quiet Feet, Thick Skin keeps damage taken, Deep Pockets, Fleet Foot, Night Owl, Heavy Hands +30% bat, Scavenger, Carpenter, Steady Hands reload 0.84 s, Bloodlust +4 per kill); dawn can't be skipped without a pick; key 2 picks; perks saved
+- [x] ✅ `[LINUX-AUTO]` Your Echo: rises 1.5 s after a death with items (not with an empty bag), carries the backpack (none on the ground), looks like you, saved and restored where it was; killing it drops the backpack there with everything in it, +100 score
+- [x] ✅ `[LINUX-AUTO]` Shotgun (house A wardrobe, every seed) and fire axe (house C toolbox): picked up even with a full bag, go to a weapon slot loaded, no duplicates; one shotgun blast hits several zombies, +1.25 Heat; two axe hits kill a Walker; found weapons saved
+- [x] ✅ `[LINUX-AUTO]` Intro transmission on a new game: pauses, first key shows all text, second key plays
+- [ ] ⏳ `[WIN-PLAY]` Die carrying things on purpose and hunt your Echo. Exciting or annoying?
+- [ ] ⏳ `[WIN-PLAY]` Pick perks for 3 nights: are the choices interesting? Any perk useless or too strong?
+- [ ] ⏳ `[WIN-PLAY]` Find the shotgun and the axe: do they feel powerful? Is the shotgun's noise (+1.25 Heat) a real decision?
+
 ## Phase 12 — Release
 - [ ] `[WIN-PLAY]` 30-minute session with no crash and no memory growth trend (FPS counter shows memory when run from the editor)
 - [ ] `[WIN-PLAY]` Windows .exe runs on a clean machine (no Godot installed)

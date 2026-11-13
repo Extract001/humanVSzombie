@@ -22,6 +22,8 @@ enum Category { FOOD, WATER, MEDICAL, AMMO, MATERIAL, QUEST }
 @export_group("Rules")
 ## Quest items can't be dropped or used up, so objectives can never become impossible.
 @export var is_quest_item: bool = false
+## Slice 2: picking this up gives you a weapon (it goes into a weapon slot, not your bag).
+@export var weapon: WeaponData
 
 
 func is_usable() -> bool:

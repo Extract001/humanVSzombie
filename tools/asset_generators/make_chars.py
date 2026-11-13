@@ -212,6 +212,17 @@ def weapons():
     pistol = Canvas(10, 5)
     pistol.rect(2, 0, 8, 2, (70, 72, 76)); pistol.hline(2, 0, 8, (110, 112, 116)); pistol.rect(2, 2, 3, 3, (52, 46, 42)); pistol.put(5, 2, (60, 62, 66))
     pistol.save(f"{OUT}/assets/sprites/pistol.png")
+    # Slice 2: pump shotgun (dark steel barrel over a wooden pump and stock) and fire axe.
+    shotgun = Canvas(16, 5)
+    shotgun.rect(0, 1, 5, 3, (120, 84, 50)); shotgun.hline(0, 1, 5, (150, 108, 66)); shotgun.put(0, 3, (90, 62, 38))
+    shotgun.rect(5, 1, 2, 3, (52, 50, 50))
+    shotgun.rect(7, 0, 9, 2, (64, 66, 70)); shotgun.hline(7, 0, 9, (104, 106, 112))
+    shotgun.rect(8, 2, 5, 2, (134, 96, 58)); shotgun.hline(8, 2, 5, (160, 116, 72))
+    shotgun.save(f"{OUT}/assets/sprites/shotgun.png")
+    axe = Canvas(16, 6)
+    axe.rect(0, 2, 12, 2, (132, 94, 56)); axe.hline(0, 2, 12, (164, 120, 74)); axe.rect(0, 2, 2, 2, (60, 52, 46))
+    axe.rect(11, 0, 4, 6, (176, 46, 40)); axe.vline(11, 0, 6, (204, 70, 58)); axe.vline(15, 0, 6, (196, 200, 206)); axe.vline(14, 1, 4, (150, 154, 160))
+    axe.save(f"{OUT}/assets/sprites/fire_axe.png")
     flash = Canvas(16, 8)   # 2 frames 8x8
     for fr, r in ((0, 3), (1, 2)):
         ox = fr * 8

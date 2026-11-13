@@ -19,6 +19,7 @@ func _ready() -> void:
 	SaveSystem.path = "user://tool_save.json"
 	GameState.street_spawns_disabled = true  # fun pass: measure the placed/horde zombies only
 	GameState.records_disabled = true
+	GameState.intro_disabled = true
 	print("SIEGE SCENARIOS (night length %d s, %d Walker damage per hit on boards every %.1f s, %d HP per plank)" % [
 		SIEGE.night_length, SIEGE.zombie_barricade_damage, SIEGE.zombie_barricade_interval, SIEGE.plank_health])
 	print("mode     night heat boards | horde | 1st breach | windows broken | got inside | bites  dmg | kills | scrap used")
@@ -80,7 +81,7 @@ func _night(mode: String, night: int, heat: float, boards: int) -> void:
 		if (b as Barricade).is_broken():
 			broken += 1
 	if game.dawn_panel.visible:
-		game.dawn_panel.close()
+		game.dawn_panel.pick_first_and_close()
 	get_tree().paused = false
 	var kills: int = int(GameState.stats.get("kills", 0))
 	print("%-8s %5d %4d %6d | %5d | %10s | %14d | %10d | %5d %4d | %5d | %d" % [mode, night, int(heat), boards, horde,

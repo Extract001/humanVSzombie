@@ -29,6 +29,7 @@ func _ready() -> void:
 	SaveSystem.path = "user://tool_save.json"
 	GameState.street_spawns_disabled = true  # fun pass: measure the placed/horde zombies only
 	GameState.records_disabled = true
+	GameState.intro_disabled = true
 	print("PLAYTHROUGH BOT")
 	for s in SEEDS:
 		await _run(s, false)
@@ -144,7 +145,7 @@ func _first_night(label: String) -> bool:
 	if not (saw_night and game.dawn_panel.visible):
 		_fail(label, "no night / no dawn")
 		return false
-	game.dawn_panel.close()
+	game.dawn_panel.pick_first_and_close()
 	await _frames(2)
 	var save: Dictionary = SaveSystem.read_save()
 	var ok: bool = GameState.day == 2 and GameState.nights_survived == 1 and save.ok and int(save.data.world.day) == 2

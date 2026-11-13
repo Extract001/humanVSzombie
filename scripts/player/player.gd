@@ -89,11 +89,20 @@ var _swing_offset: float = 0.0
 
 var flashlight_on: bool = false
 var _run_noise_left: float = 0.0
+## Slice 2: the stats before perks (data/player/player_stats.tres).
+var base_stats: PlayerStats
+var _base_bag_slots: int = 12
 
 
 func _ready() -> void:
 	if stats == null:
 		stats = PlayerStats.new()
+	# Slice 2: `stats` is the base copy with the picked perks applied (see apply_perks).
+	base_stats = stats
+	_base_bag_slots = inventory.capacity_slots
+	stats = Perks.apply_to_stats(base_stats)
+	inventory.capacity_slots = _base_bag_slots + Perks.bag_slots_bonus()
+	GameState.perks_changed.connect(apply_perks)
 	add_to_group(&"player")
 	stamina = stats.max_stamina
 	health.setup(stats.max_health)
@@ -102,6 +111,7 @@ func _ready() -> void:
 	adaptation_light.enabled = false
 	muzzle_light.enabled = false
 	weapons.setup(self, inventory)
+	inventory.item_changed.connect(_on_item_changed_for_weapons)
 	weapons.weapon_changed.connect(_on_weapon_changed)
 	weapons.reload_finished.connect(_on_reload_finished)
 	weapons.attacked.connect(_on_weapon_attacked)
@@ -173,6 +183,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		try_switch(1)
 	elif event.is_action_pressed(&"weapon_3"):
 		try_switch(2)
+	elif event.is_action_pressed(&"weapon_4"):
+		try_switch(3)
 	elif event.is_action_pressed(&"weapon_next"):
 		try_cycle(1)
 	elif event.is_action_pressed(&"weapon_prev"):
@@ -408,6 +420,7 @@ func to_save_dict() -> Dictionary:
 		"health": health.current_health,
 		"inventory": inventory.to_array(),
 		"rounds_in_mag": weapons.rounds_in_mag.duplicate(),
+		"weapons": weapons.slots.map(func(w: WeaponData) -> String: return String(w.id)),
 		"weapon": weapons.current,
 	}
 
@@ -415,6 +428,12 @@ func to_save_dict() -> Dictionary:
 ## Restores saved player data. A player saved dead (death autosave) wakes up at `respawn_at`.
 func apply_save_dict(d: Dictionary, respawn_at: Vector2) -> void:
 	inventory.from_array(d.get("inventory", []))
+	# Slice 2: weapons found later (shotgun, fire axe) come back from the save.
+	for wid in d.get("weapons", []):
+		if not weapons.has_weapon(StringName(wid)):
+			for item in ItemRegistry.all_items():
+				if item.weapon != null and item.weapon.id == StringName(wid):
+					weapons.add_weapon(item.weapon, 0)
 	var mags: Array = d.get("rounds_in_mag", [])
 	for i in mini(mags.size(), weapons.rounds_in_mag.size()):
 		weapons.rounds_in_mag[i] = clampi(int(mags[i]), 0, weapons.slots[i].magazine_size)
@@ -551,6 +570,37 @@ func flashlight_charge_ratio() -> float:
 
 
 ## F key. Returns the new on/off state.
+## Slice 2: picking up a weapon item (shotgun, fire axe) puts it in a weapon slot, not the bag.
+func _on_item_changed_for_weapons(id: StringName, quantity: int) -> void:
+	if quantity <= 0:
+		return
+	var item: ItemData = ItemRegistry.get_item(id)
+	if item == null or item.weapon == null:
+		return
+	_take_weapon_item.call_deferred(id, item)
+
+
+func _take_weapon_item(id: StringName, item: ItemData) -> void:
+	var n: int = inventory.count(id)
+	if n <= 0:
+		return
+	inventory.remove_item(id, n)
+	if weapons.add_weapon(item.weapon):
+		message.emit("You found a %s! Press %d" % [item.weapon.display_name.to_lower(), weapons.slots.size()])
+		try_switch(weapons.slots.size() - 1)
+
+
+## Slice 2: re-applies the picked perks (on pick and on load). Health keeps the same damage taken.
+func apply_perks() -> void:
+	var old_max: float = stats.max_health
+	stats = Perks.apply_to_stats(base_stats)
+	inventory.capacity_slots = _base_bag_slots + Perks.bag_slots_bonus()
+	if not is_dead():
+		health.setup(stats.max_health, health.current_health + (stats.max_health - old_max))
+	stamina = minf(stamina, stats.max_stamina)
+	stamina_changed.emit(stamina, stats.max_stamina)
+
+
 ## Phase 11: the "Flashlight shadows" setting (visual only).
 func _apply_graphics_settings() -> void:
 	flashlight.shadow_enabled = Settings.flashlight_shadows

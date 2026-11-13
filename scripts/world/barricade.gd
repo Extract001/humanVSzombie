@@ -89,7 +89,8 @@ func center() -> Vector2:
 
 ## Health of one plank (Slice 2: the Carpenter perk makes them tougher).
 static func plank_health() -> float:
-	return SIEGE.plank_health * Perks.plank_health_mult()
+	return SIEGE.plank_health * Perks.plank_health_mult() * Characters.plank_health_mult(GameState.character) \
+		* Survivors.plank_health_mult()
 
 
 func health() -> float:

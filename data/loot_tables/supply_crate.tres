@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LootTable" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/loot_table.gd" id="1_lt"]
+
+[resource]
+script = ExtResource("1_lt")
+empty_chance = 0.0
+rolls_min = 3
+rolls_max = 4
+item_ids = Array[StringName]([&"ammo_pistol", &"ammo_shotgun", &"medkit", &"bandage", &"scrap", &"battery", &"food_can", &"water_bottle"])
+weights = Array[float]([3.0, 2.0, 1.5, 2.0, 3.0, 1.5, 1.0, 1.0])
+min_qty = Array[int]([6, 3, 1, 1, 2, 1, 1, 1])
+max_qty = Array[int]([12, 6, 1, 2, 4, 1, 2, 2])

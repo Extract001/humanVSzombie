@@ -21,6 +21,14 @@ const MIN_SPAWN_DISTANCE: float = 360.0
 ## Fun pass: a quarter of the night horde are fast Lurchers.
 const LURCHER: ZombieData = preload("res://data/zombies/lurcher.tres")
 const LURCHER_SHARE: float = 0.25
+## Batch 1: special zombies and events.
+const BRUTE: ZombieData = preload("res://data/zombies/brute.tres")
+const SCREAMER: ZombieData = preload("res://data/zombies/screamer.tres")
+signal night_event_announced(id: StringName)
+## Brutes still to place tonight (Brute night).
+var _brutes_left: int = 0
+## Batch 2: windows broken tonight (survivors can die when the horde breaks in).
+var _breaches: int = 0
 
 var data: SiegeData = preload("res://data/siege/siege_data.tres")
 var game: Node
@@ -55,6 +63,10 @@ func setup(game_root: Node, p: Player, actors_root: Node2D, world: Node2D) -> vo
 	lamp.range_item_cull_mask = 1 | 2
 	world.add_child(lamp)
 	NoiseSystem.noise_emitted.connect(_on_noise)
+	for b in get_tree().get_nodes_in_group(&"barricades"):
+		(b as Barricade).broken.connect(func() -> void:
+			if GameState.phase == GameState.Phase.NIGHT:
+				_breaches += 1)
 	# A save made at dusk or during the night (e.g. a death) restarts at the beginning of dusk.
 	if GameState.phase != GameState.Phase.DAY:
 		GameState.phase = GameState.Phase.DUSK
@@ -70,7 +82,7 @@ func _physics_process(delta: float) -> void:
 	GameState.phase_time += delta
 	match GameState.phase:
 		GameState.Phase.DAY:
-			if GameState.phase_time >= data.day_length:
+			if GameState.phase_time >= day_length():
 				start_dusk()
 		GameState.Phase.DUSK:
 			if GameState.phase_time >= data.dusk_length:
@@ -91,8 +103,14 @@ func start_dusk() -> void:
 	GameState.phase_time = 0.0
 	_boards_at_dusk = _total_boards()
 	_heat_at_dusk = GameState.heat
+	GameState.night_event = NightEvents.pick(GameState.nights_survived + 1, GameState.night_event, GameState.world_seed)
 	AudioManager.play_ui(preload("res://assets/audio/sfx/dusk_bell.wav"), -2.0)
+	if GameState.night_event != NightEvents.NONE:
+		AudioManager.play_ui(preload("res://assets/audio/sfx/event_sting.wav"), -1.0)
+		get_tree().call_group(&"hud", &"show_banner", "TONIGHT: " + NightEvents.title(GameState.night_event),
+			NightEvents.description(GameState.night_event))
 	_toast("Dusk. About %d of them will come tonight. Get inside and board up." % horde_estimate())
+	night_event_announced.emit(GameState.night_event)
 	phase_changed.emit(GameState.phase)
 
 
@@ -108,6 +126,9 @@ func start_night() -> void:
 		var t: float = pow(float(i) / maxf(1.0, _night_horde_size), 1.3) * data.night_length * data.arrival_share
 		_spawn_times.append(t + randf_range(0.0, 2.0))
 	_spawn_times.sort()
+	_brutes_left = (1 + GameState.nights_survived / 4) if GameState.night_event == NightEvents.BRUTES else 0
+	_brutes_left = maxi(_brutes_left, DailyChallenge.forced_brutes())
+	_breaches = 0
 	AudioManager.play_ui(preload("res://assets/audio/sfx/horde_howl.wav"), -1.0)
 	_toast("Night %d. They're coming." % (GameState.nights_survived + 1))
 	phase_changed.emit(GameState.phase)
@@ -137,12 +158,18 @@ func end_night() -> void:
 		"boards_lost": maxi(0, _boards_at_dusk - _total_boards()),
 		"heat": _heat_at_dusk,
 		"restocked": restocked,
+		"breaches": _breaches,
 		"evac": GameState.nights_survived >= data.nights_to_win and GameState.has_unlock(&"radio_repaired"),
 	}
 	GameState.reset_heat()
 	_apply_look()
 	phase_changed.emit(GameState.phase)
 	dawn.emit(summary)
+
+
+## Seconds of daylight (Batch 2: the daily twist "Short Days" cuts it).
+func day_length() -> float:
+	return data.day_length * DailyChallenge.day_length_mult()
 
 
 ## Skip the rest of the day (the bed). Only during the day.
@@ -161,6 +188,9 @@ func is_night() -> bool:
 func horde_estimate() -> int:
 	var night: int = GameState.nights_survived + 1
 	var n: int = data.horde_base + roundi(data.horde_per_night * (night - 1) + data.horde_per_heat * GameState.heat)
+	if GameState.phase != GameState.Phase.DAY:
+		n = roundi(n * NightEvents.horde_mult(GameState.night_event))
+	n = roundi(n * DailyChallenge.horde_mult())
 	var awake := 0
 	for z in get_tree().get_nodes_in_group(&"zombies"):
 		if (z as Zombie).state != Zombie.State.DEAD:
@@ -173,7 +203,7 @@ func clock_minutes() -> int:
 	var t: float = GameState.phase_time
 	match GameState.phase:
 		GameState.Phase.DAY:
-			return int(6 * 60 + 12 * 60 * clampf(t / data.day_length, 0.0, 1.0))
+			return int(6 * 60 + 12 * 60 * clampf(t / day_length(), 0.0, 1.0))
 		GameState.Phase.DUSK:
 			return int(18 * 60 + 2 * 60 * clampf(t / data.dusk_length, 0.0, 1.0))
 		_:
@@ -189,7 +219,7 @@ func clock_text() -> String:
 func time_left() -> float:
 	match GameState.phase:
 		GameState.Phase.DAY:
-			return data.day_length - GameState.phase_time
+			return day_length() - GameState.phase_time
 		GameState.Phase.DUSK:
 			return data.dusk_length - GameState.phase_time
 		_:
@@ -218,8 +248,23 @@ func _spawn_horde_walker() -> void:
 		return
 	var at: Vector2 = (spawns[randi() % spawns.size()] as Node2D).global_position + Vector2(randf_range(-12, 12), randf_range(-12, 12))
 	var z: Zombie = WALKER.instantiate()
-	if randf() < LURCHER_SHARE:
-		z.data = LURCHER
+	match GameState.night_event:
+		NightEvents.BRUTES:
+			if _brutes_left > 0:
+				_brutes_left -= 1
+				z.data = BRUTE
+		NightEvents.SCREAMERS:
+			if randf() < 0.3:
+				z.data = SCREAMER
+		NightEvents.FOG:
+			if randf() < 0.5:
+				z.data = LURCHER
+	if _brutes_left > 0 and GameState.night_event != NightEvents.BRUTES:
+		_brutes_left -= 1   # Batch 2: daily twist "Heavy Hitters"
+		z.data = BRUTE
+	if z.data == null or z.data.id == &"walker":
+		if randf() < LURCHER_SHARE:
+			z.data = LURCHER
 	z.position = at
 	z.siege_goal = _pick_window_goal(at)
 	actors.add_child(z)
@@ -283,16 +328,17 @@ func _apply_look() -> void:
 	var c := Color.WHITE
 	match GameState.phase:
 		GameState.Phase.DAY:
-			var late: float = clampf((t - data.day_length * 0.85) / (data.day_length * 0.15), 0.0, 1.0)
+			var late: float = clampf((t - day_length() * 0.85) / (day_length() * 0.15), 0.0, 1.0)
 			c = Color.WHITE.lerp(data.dusk_tint, late)
 		GameState.Phase.DUSK:
-			c = data.dusk_tint.lerp(data.night_tint, clampf(t / data.dusk_length, 0.0, 1.0))
+			c = data.dusk_tint.lerp(NightEvents.night_tint(GameState.night_event, data.night_tint), clampf(t / data.dusk_length, 0.0, 1.0))
 		GameState.Phase.NIGHT:
 			var morning: float = clampf((t - (data.night_length - 8.0)) / 8.0, 0.0, 1.0)
-			c = data.night_tint.lerp(data.dusk_tint, morning)
+			c = NightEvents.night_tint(GameState.night_event, data.night_tint).lerp(data.dusk_tint, morning)
 	tint.color = c
 	var dark: bool = c.v < 0.75
-	lamp.enabled = c != Color.WHITE
+	lamp.enabled = c != Color.WHITE and not DailyChallenge.lamp_dead() \
+		and not (GameState.night_event == NightEvents.BLACKOUT and GameState.phase != GameState.Phase.DAY)
 	if player != null:
 		player.set_outdoor_dark(dark and not game.is_in_safehouse())
 

@@ -22,10 +22,11 @@ func _ready() -> void:
 	GameState.intro_disabled = true
 	print("SIEGE SCENARIOS (night length %d s, %d Walker damage per hit on boards every %.1f s, %d HP per plank)" % [
 		SIEGE.night_length, SIEGE.zombie_barricade_damage, SIEGE.zombie_barricade_interval, SIEGE.plank_health])
-	print("mode     night heat boards | horde | 1st breach | windows broken | got inside | bites  dmg | kills | scrap used")
-	for cfg in [[1, 0, 2], [1, 4, 2], [3, 0, 1], [3, 0, 3], [5, 0, 3], [5, 6, 3], [10, 0, 3], [10, 8, 3]]:
+	print("mode     event   night heat boards | horde | 1st breach | windows broken | got inside | bites  dmg | kills | scrap used")
+	for cfg in [[1, 0, 2], [1, 4, 2], [3, 0, 1], [3, 0, 3], [5, 0, 3], [5, 6, 3], [10, 0, 3], [10, 8, 3],
+			[4, 2, 3, &"brutes"], [6, 2, 3, &"brutes"], [4, 2, 3, &"screamers"], [5, 2, 3, &"fog"], [5, 2, 3, &"blood_moon"]]:
 		for mode in ["PASSIVE", "DEFEND"]:
-			await _night(mode, cfg[0], cfg[1], cfg[2])
+			await _night(mode, cfg[0], cfg[1], cfg[2], cfg[3] if cfg.size() > 3 else &"none")
 	print("SIEGE SCENARIOS COMPLETED")
 	for f in [SaveSystem.path, SaveSystem.path + ".bak", SaveSystem.path + ".tmp"]:
 		if FileAccess.file_exists(f):
@@ -33,7 +34,7 @@ func _ready() -> void:
 	get_tree().quit()
 
 
-func _night(mode: String, night: int, heat: float, boards: int) -> void:
+func _night(mode: String, night: int, heat: float, boards: int, event: StringName = &"none") -> void:
 	SaveSystem.fresh_start = false
 	GameState.new_game(night * 100 + int(heat))
 	seed(night * 7919 + int(heat) * 31 + boards)
@@ -58,6 +59,8 @@ func _night(mode: String, night: int, heat: float, boards: int) -> void:
 		(b as Barricade).set_planks(boards)
 	GameState.nights_survived = night - 1
 	GameState.heat = heat
+	GameState.night_event = event
+	GameState.phase = GameState.Phase.DUSK
 	var dawned := [false]
 	game.day_cycle.dawn.connect(func(_s: Dictionary) -> void: dawned[0] = true)
 	game.day_cycle.start_night()
@@ -84,7 +87,7 @@ func _night(mode: String, night: int, heat: float, boards: int) -> void:
 		game.dawn_panel.pick_first_and_close()
 	get_tree().paused = false
 	var kills: int = int(GameState.stats.get("kills", 0))
-	print("%-8s %5d %4d %6d | %5d | %10s | %14d | %10d | %5d %4d | %5d | %d" % [mode, night, int(heat), boards, horde,
+	print("%-8s %-10s %2d %4d %6d | %5d | %10s | %14d | %10d | %5d %4d | %5d | %d" % [mode, String(event).left(10), night, int(heat), boards, horde,
 		("%.0f s" % first_breach) if first_breach >= 0.0 else "never", broken, inside_ids.size(), bites[0], int(bites[1]),
 		kills, (scrap_start - p.inventory.count(&"scrap")) if mode == "DEFEND" else 0])
 	game.queue_free()

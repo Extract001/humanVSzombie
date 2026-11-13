@@ -68,7 +68,10 @@ static func bag_slots_bonus() -> int:
 
 
 ## Applies the stat perks to a fresh copy of the player's base stats.
-static func apply_to_stats(base: PlayerStats) -> PlayerStats:
+static func apply_to_stats(raw: PlayerStats) -> PlayerStats:
+	# Batch 2: the character and the daily twist come first; perks build on top.
+	var base: PlayerStats = Characters.apply(GameState.character, raw)
+	DailyChallenge.apply_to_stats(base)
 	var s: PlayerStats = base.duplicate()
 	s.run_noise_radius = base.run_noise_radius * maxf(0.2, 1.0 - total(&"quiet_feet"))
 	s.max_stamina = base.max_stamina * (1.0 + total(&"iron_lungs"))

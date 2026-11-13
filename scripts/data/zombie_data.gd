@@ -11,6 +11,15 @@ extends Resource
 @export var score: int = 10
 ## The yellow eye glow drawn over the sprite (off for Your Echo, which uses the player's sprite).
 @export var glowing_eyes: bool = true
+## Batch 1 (Brute / Screamer):
+## Sprite size (the Brute is a head taller). Collision stays the same.
+@export var body_scale: float = 1.0
+## Barricade damage multiplier (Brute: 3× — it breaks a plank in one hit).
+@export var barricade_damage_mult: float = 1.0
+## Bangs on a closed (unlocked) door before it bursts open. 0 = never (Walkers).
+@export var door_hits_to_break: int = 0
+## When it spots you it screams: a noise this big (px) that pulls every zombie in range. 0 = no.
+@export var scream_radius: float = 0.0
 
 @export_group("Health")
 @export var max_health: float = 60.0

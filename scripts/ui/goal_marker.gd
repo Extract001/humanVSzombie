@@ -9,6 +9,11 @@ const HOME_COLOR := Color(1.0, 0.6, 0.35)
 
 var game: Node
 var goal: Dictionary = {}
+## Batch 1: what to point at (default: GoalFinder), its colour and ring size, so the HUD can
+## show a second arrow (the yellow supply-drop arrow).
+var provider: Callable = Callable()
+var color: Color = COLOR
+var ring_radius: float = RING_RADIUS
 var _refresh: float = 0.0
 
 
@@ -23,7 +28,7 @@ func _process(delta: float) -> void:
 	_refresh -= delta
 	if _refresh <= 0.0:
 		_refresh = 0.25
-		goal = GoalFinder.find(game)
+		goal = provider.call() if provider.is_valid() else GoalFinder.find(game)
 	var p: Player = game.player
 	visible = not goal.is_empty() and p != null and p.global_position.distance_to(goal.pos) > 28.0 and not p.ui_open
 	queue_redraw()
@@ -33,10 +38,10 @@ func _draw() -> void:
 	if not visible or goal.is_empty():
 		return
 	var p: Player = game.player
-	var col: Color = HOME_COLOR if goal.label == "HOME" or goal.label == "BOARD UP" else COLOR
+	var col: Color = HOME_COLOR if goal.label == "HOME" or goal.label == "BOARD UP" else color
 	var center: Vector2 = p.get_global_transform_with_canvas().origin + Vector2(0, -8)
 	var dir: Vector2 = p.global_position.direction_to(goal.pos)
-	var tip: Vector2 = center + dir * RING_RADIUS
+	var tip: Vector2 = center + dir * ring_radius
 	var side: Vector2 = dir.orthogonal() * 4.0
 	var pts := PackedVector2Array([tip + dir * 6.0, tip + side, tip - side])
 	draw_colored_polygon(pts, Color(0, 0, 0, 0.6))

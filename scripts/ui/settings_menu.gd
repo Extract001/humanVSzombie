@@ -11,6 +11,7 @@ var _music: HSlider
 var _fullscreen: CheckButton
 var _vsync: CheckButton
 var _shadows: CheckButton
+var _playtest: CheckButton
 var _fps: CheckButton
 var _bind_buttons: Dictionary = {}   ## action -> Button
 var _waiting_for: StringName = &""   ## action being rebound, or empty
@@ -38,6 +39,8 @@ func _ready() -> void:
 	_vsync = _check(general, "V-Sync (off can raise FPS, may tear)")
 	_fps = _check(general, "Show FPS counter")
 	_shadows = _check(general, "Flashlight shadows (off = faster)")
+	_playtest = _check(general, "Playtest mode (local log + fun rating)")
+	_playtest.toggled.connect(func(on: bool) -> void: Settings.playtest_mode = on; _save())
 	_master.value_changed.connect(func(v: float) -> void: Settings.master_volume = v / 100.0; _save())
 	_sfx.value_changed.connect(func(v: float) -> void: Settings.sfx_volume = v / 100.0; _save())
 	_music.value_changed.connect(func(v: float) -> void: Settings.music_volume = v / 100.0; _save())
@@ -97,6 +100,7 @@ func refresh() -> void:
 	_vsync.set_pressed_no_signal(Settings.vsync)
 	_fps.set_pressed_no_signal(Settings.show_fps)
 	_shadows.set_pressed_no_signal(Settings.flashlight_shadows)
+	_playtest.set_pressed_no_signal(Settings.playtest_mode)
 	for action in _bind_buttons:
 		var b: Button = _bind_buttons[action]
 		b.text = "Press a key..." if action == _waiting_for else Settings.event_text(Settings.primary_event(action))

@@ -321,6 +321,25 @@ This one session covers every open `[WIN-PLAY]` item from Phases 4–10. Play fr
 - [ ] ⏳ `[WIN-PLAY]` Pick perks for 3 nights: are the choices interesting? Any perk useless or too strong?
 - [ ] ⏳ `[WIN-PLAY]` Find the shotgun and the axe: do they feel powerful? Is the shotgun's noise (+1.25 Heat) a real decision?
 
+## Batch 1 — Brutes, Screamers, special nights, supply drops
+- [x] ✅ `[LINUX-AUTO]` Brute: bigger, 180 HP, one plank per hit, shove barely staggers, bursts unlocked doors but never the locked gate
+- [x] ✅ `[LINUX-AUTO]` Screamer: screams on sight; a Walker 400 px away comes; no Heat
+- [x] ✅ `[LINUX-AUTO]` Events: night 1 calm, night 2 always special, never twice in a row, seeded; Blood Moon horde ×1.5 and double score; Blackout lamp off; Brute night spawns Brutes; banner + HUD line; saved
+- [x] ✅ `[LINUX-AUTO]` Supply drops: none on day 1; day 2 crate away from home, guarded, yellow arrow until opened, good loot, replaced next morning
+- [x] ✅ `[VISUAL]` (Claude, Linux) banner below the player, long toasts wrap, crate flare and smoke visible
+- [ ] ⏳ `[WIN-PLAY]` Is a Brute night scary but fair? Do Screamers make you change plans? Do you go for the supply drop, and is it worth the risk?
+
+## Batch 2 — Survivors, characters, daily challenge, playtest kit
+- [x] ✅ `[LINUX-AUTO]` Characters: unlock rules from lifetime records; Dex/Kit/Mara/Sol numbers; applied under the perks; starting gear; tests always Rook
+- [x] ✅ `[LINUX-AUTO]` Daily: same seed and twist for a date, twists change across days, own save file, Glass Bones/Swarm/Short Days effects, one life (no respawn, Try again)
+- [x] ✅ `[LINUX-AUTO]` Survivors: Tomas on the radio on day 2, green arrow, E → follows, rescued inside the safehouse (+150), Mechanic/Doctor/Scavenger/Guard jobs, losses only after break-ins and at most one a night, break-ins counted at night
+- [x] ✅ `[LINUX-AUTO]` Character, mode, twist and survivors survive save/load
+- [x] ✅ `[LINUX-AUTO]` Playtest log writes CSV rows with a header and a readable summary with the rating; banners queue
+- [x] ✅ `[VISUAL]` (Claude, Linux) menu PLAY AS panel (unlocked + locked), daily line, survivor waiting/following with the green arrow, dawn summary lines, daily run over with the rating row
+- [ ] ⏳ `[WIN-PLAY]` Rescue Tomas on day 2: is it clear where to go, and does he keep up? Does having survivors make you care about the windows?
+- [ ] ⏳ `[WIN-PLAY]` Play one Daily challenge. Pick another character once unlocked: does it feel different?
+- [ ] ⏳ `[PLAYTEST]` 3–5 friends × 15 min (documentation/PLAYTEST_GUIDE.md); bring back the summaries and notes
+
 ## Phase 12 — Release
 - [ ] `[WIN-PLAY]` 30-minute session with no crash and no memory growth trend (FPS counter shows memory when run from the editor)
 - [ ] `[WIN-PLAY]` Windows .exe runs on a clean machine (no Godot installed)

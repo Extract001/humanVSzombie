@@ -8,6 +8,8 @@ signal closed
 
 var game: Node
 var resume_button: Button
+## Batch 2: playtest rating.
+var rating: RatingRow
 var save_note: Label
 ## Slice 2: your perks so far.
 var perks_note: Label
@@ -36,6 +38,8 @@ func _ready() -> void:
 	perks_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	perks_note.custom_minimum_size = Vector2(160, 0)
 	box.add_child(perks_note)
+	rating = RatingRow.new()
+	box.add_child(rating)
 
 
 func bind(g: Node) -> void:
@@ -49,6 +53,9 @@ func pause() -> void:
 	save_note.text = "Leaving now saves the game." if game.is_in_safehouse() \
 		else "Not in the safehouse: progress since the last save (safehouse, bed) will be lost."
 	perks_note.text = "Perks: " + Perks.summary()
+	if DailyChallenge.is_daily():
+		perks_note.text = "DAILY %s: %s\n" % [GameState.daily_date, DailyChallenge.title(GameState.modifier)] + perks_note.text
+	rating.refresh()
 	visible = true
 	get_tree().paused = true
 	resume_button.grab_focus()

@@ -59,6 +59,11 @@ var _door_bang_left: float = 0.0
 ## window) whenever it has nothing better to do. Vector2.INF = a normal town Walker.
 var siege_goal: Vector2 = Vector2.INF
 var _barricade_hit_left: float = 0.0
+## Batch 1: Brute door smashing, Screamer screams.
+var _door_hits: int = 0
+var _scream_cooldown: float = 0.0
+const SCREAM_COOLDOWN: float = 10.0
+signal screamed
 ## Crossing a window link (navigation layer 2): head straight for the far side, don't re-path
 ## halfway (the window gap itself isn't on the walkable mesh).
 var _link_exit: Vector2 = Vector2.INF
@@ -84,6 +89,9 @@ func _ready() -> void:
 	health.setup(data.max_health)
 	health.died.connect(_on_died)
 	modulate = data.tint
+	if data.body_scale != 1.0:
+		sprite.scale *= data.body_scale
+		eyes.scale *= data.body_scale
 	nav_agent.navigation_layers = 1 | NavigationBaker.WINDOW_NAV_LAYER  # Slice 1: may path through windows
 	nav_agent.link_reached.connect(_on_link_reached)
 	# Random start offsets so many zombies don't all think (or wander) on the same frame.
@@ -111,6 +119,7 @@ func _on_sprite_frame_changed() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_scream_cooldown = maxf(0.0, _scream_cooldown - delta)
 	if state == State.DEAD:
 		return
 	_time_since_bite += delta
@@ -224,6 +233,8 @@ func get_hearing_multiplier() -> float:
 
 
 func _on_spotted_player() -> void:
+	if data.scream_radius > 0.0 and _scream_cooldown <= 0.0:
+		scream()
 	if (state == State.IDLE or state == State.WANDER or state == State.INVESTIGATE \
 			or state == State.SEARCH) and _grunt_cooldown <= 0.0:
 		_grunt_cooldown = GRUNT_COOLDOWN
@@ -450,7 +461,7 @@ func _check_blocked_by_barricade(delta: float) -> void:
 		if b != null and not b.is_broken():
 			_barricade_hit_left = SIEGE.zombie_barricade_interval
 			facing = global_position.direction_to(b.center())
-			b.take_hit(SIEGE.zombie_barricade_damage)
+			b.take_hit(SIEGE.zombie_barricade_damage * data.barricade_damage_mult)
 			barricade_hit.emit(b)
 			return
 
@@ -472,6 +483,10 @@ func _check_blocked_by_door(delta: float) -> void:
 			_door_bang_left = DOOR_BANG_INTERVAL
 			AudioManager.play_at(preload("res://assets/audio/sfx/door_bang.wav"), global_position, -2.0)
 			door_banged.emit(door)
+			if data.door_hits_to_break > 0:
+				_door_hits += 1
+				if _door_hits >= data.door_hits_to_break and door.smash_open():
+					_door_hits = 0
 			return
 
 
@@ -481,6 +496,15 @@ func _set_state(new_state: State) -> void:
 		return
 	state = new_state
 	state_changed.emit(new_state)
+
+
+## Batch 1 (Screamer): a shriek that calls every zombie within scream_radius to this spot.
+func scream() -> void:
+	_scream_cooldown = SCREAM_COOLDOWN
+	AudioManager.play_at(preload("res://assets/audio/sfx/scream.wav"), global_position, 3.0)
+	NoiseSystem.emit_noise(global_position, data.scream_radius, self)
+	Juice.popup(get_parent(), global_position + Vector2(0, -16), "!!", Color(0.9, 0.95, 1.0), 20)
+	screamed.emit()
 
 
 func _on_died() -> void:

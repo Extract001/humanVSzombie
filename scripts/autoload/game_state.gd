@@ -56,7 +56,19 @@ var street_spawns_disabled: bool = false
 ## Slice 2: perk cards picked at dawn: perk id -> stacks (saved).
 signal perks_changed
 var perks: Dictionary = {}
+## Batch 1: tonight's special event (NightEvents id) and today's supply drop
+## ({"id", "x", "y", "day"} or empty).
+var night_event: StringName = &"none"
+var supply_drop: Dictionary = {}
 var records_disabled: bool = false
+## Batch 2: who you play this run (Characters id), normal or daily run (+ its date and twist),
+## and the survivors you met: id -> "home" or "dead" (missing = not rescued yet).
+signal survivors_changed
+var character: StringName = &"rook"
+var mode: StringName = &"normal"
+var daily_date: String = ""
+var modifier: StringName = &"none"
+var survivors: Dictionary = {}
 ## Tests, bots and tools skip the opening transmission (it pauses the game).
 var intro_disabled: bool = false
 
@@ -83,6 +95,15 @@ func new_game(seed_value: int = -1) -> void:
 	restocks = {}
 	score = 0
 	perks = {}
+	night_event = &"none"
+	supply_drop = {}
+	# Tests and tools always play the default character (never the player's own pick).
+	character = Settings.selected_character if (Characters.is_unlocked(Settings.selected_character) and not records_disabled) \
+		else Characters.ROOK
+	mode = &"normal"
+	daily_date = ""
+	modifier = &"none"
+	survivors = {}
 	_next_pile = 1
 	piles_changed.emit()
 
@@ -185,6 +206,8 @@ func add_perk(id: StringName) -> void:
 func add_score(points: int) -> void:
 	if points == 0:
 		return
+	if mode == &"daily" and modifier == &"glass":
+		points = roundi(points * 1.5)   # Batch 2: daily twist "Glass Bones"
 	score += points
 	score_changed.emit(score)
 
@@ -345,6 +368,13 @@ func to_dict() -> Dictionary:
 		"restocks": _string_keys(restocks),
 		"score": score,
 		"perks": _string_keys(perks),
+		"night_event": String(night_event),
+		"supply_drop": supply_drop.duplicate(),
+		"character": String(character),
+		"mode": String(mode),
+		"daily_date": daily_date,
+		"modifier": String(modifier),
+		"survivors": _string_keys(survivors),
 	}
 
 
@@ -396,6 +426,16 @@ func from_dict(d: Dictionary) -> void:
 	for id in bd:
 		barricades[StringName(id)] = float(bd[id])
 	score = int(d.get("score", 0))
+	night_event = StringName(d.get("night_event", "none"))
+	supply_drop = (d.get("supply_drop", {}) as Dictionary).duplicate()
+	character = StringName(d.get("character", "rook"))
+	mode = StringName(d.get("mode", "normal"))
+	daily_date = str(d.get("daily_date", ""))
+	modifier = StringName(d.get("modifier", "none"))
+	survivors.clear()
+	var sv: Dictionary = d.get("survivors", {})
+	for id in sv:
+		survivors[StringName(id)] = str(sv[id])
 	perks.clear()
 	var pk: Dictionary = d.get("perks", {})
 	for id in pk:

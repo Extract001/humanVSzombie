@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="ZombieData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/zombie_data.gd" id="1_zdata"]
+
+[resource]
+script = ExtResource("1_zdata")
+id = &"screamer"
+display_name = "Screamer"
+tint = Color(0.86, 0.92, 1.15, 1)
+score = 40
+body_scale = 0.9
+scream_radius = 520.0
+max_health = 35.0
+wander_speed = 25.0
+investigate_speed = 35.0
+chase_speed = 50.0
+bite_damage = 8.0
+attack_range = 18.0
+lunge_tolerance = 6.0
+attack_windup = 0.4
+attack_cooldown = 1.2
+sight_range = 200.0
+sight_cone_degrees = 110.0
+proximity_sense = 24.0
+search_duration = 6.0
+think_interval = 0.2
+hearing_multiplier = 1.0
+alert_groan_radius = 140.0
+wander_radius = 80.0
+idle_time_min = 2.0
+idle_time_max = 5.0
+wander_timeout = 6.0
+search_look_interval = 1.0
+dormant_distance = 700.0
+dormant_think_interval = 1.0
+repath_interval = 0.25
+hit_stun_time = 0.15
+knockback_time = 0.25
+shove_resistance = 0.0

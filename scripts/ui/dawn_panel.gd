@@ -67,6 +67,10 @@ func show_summary(s: Dictionary) -> void:
 	if s.has("score"):
 		lines.append("Night bonus +%d   SCORE %d   %s" % [int(s.night_points), int(s.score),
 			"NEW BEST!" if s.get("new_best", false) else "Best %d" % int(s.get("best", 0))])
+	for line in s.get("survivor_lines", PackedStringArray()):
+		lines.append(line)
+	for id in s.get("unlocked", []):
+		lines.append("UNLOCKED: %s - pick them in the main menu next run." % Characters.display_name(id))
 	if int(s.get("restocked", 0)) > 0:
 		lines.append("Fresh supplies turned up in %d places around town." % int(s.restocked))
 	if not s.get("evac", false):

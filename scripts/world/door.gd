@@ -130,6 +130,18 @@ func force_open(by: Player) -> void:
 	opened.emit()
 
 
+## Batch 1: a Brute bursts a closed, unlocked door open (locked gates hold).
+func smash_open() -> bool:
+	if locked or is_open:
+		return false
+	is_open = true
+	AudioManager.play_at(preload("res://assets/audio/sfx/door_bang.wav"), global_position + span() * 0.5, 4.0)
+	Fx.burst(get_parent(), global_position + span() * 0.5, Color(0.55, 0.39, 0.22), 10, 70.0, Vector2.ZERO)
+	_apply_state()
+	opened.emit()
+	return true
+
+
 func _player_has(item_id: StringName) -> bool:
 	var p: Player = get_tree().get_first_node_in_group(&"player") as Player if is_inside_tree() else null
 	return p != null and p.inventory.count(item_id) > 0

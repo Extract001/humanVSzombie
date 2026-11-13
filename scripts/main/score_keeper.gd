@@ -18,6 +18,9 @@ var player: Player
 var streak: int = 0
 var best_streak: int = 0
 var _last_kill_ms: int = -100000
+## Batch 2: characters already unlocked when this game screen opened (to spot new unlocks).
+var _unlocked_before: Array[StringName] = []
+var _new_unlocks: Array[StringName] = []
 
 
 func setup(world_root: Node2D, splat_parent: Node2D, p: Player) -> void:
@@ -26,6 +29,7 @@ func setup(world_root: Node2D, splat_parent: Node2D, p: Player) -> void:
 	player = p
 	add_to_group(&"score_listeners")
 	GameState.item_taken.connect(_on_item_taken)
+	_unlocked_before = Characters.unlocked_ids()
 
 
 func _process(_delta: float) -> void:
@@ -35,12 +39,16 @@ func _process(_delta: float) -> void:
 
 
 func on_zombie_killed(z: Zombie) -> void:
+	if not GameState.records_disabled:
+		Settings.lifetime_kills += 1   # saved with the records (dawn, death, menu)
 	var now: int = Time.get_ticks_msec()
 	streak = streak + 1 if now - _last_kill_ms <= STREAK_WINDOW_MS else 1
 	_last_kill_ms = now
 	best_streak = maxi(best_streak, streak)
 	var mult: int = mini(streak, MAX_MULT)
 	var pts: int = (z.data.score if z.data != null else 10) * mult
+	if GameState.night_event == NightEvents.BLOOD_MOON and GameState.phase == GameState.Phase.NIGHT:
+		pts *= 2   # Batch 1: Blood Moon
 	GameState.add_score(pts)
 	Juice.popup(world, z.global_position, "+%d" % pts, Color(1, 0.88, 0.45) if mult == 1 else Color(1, 0.55, 0.3))
 	if streak >= 2:
@@ -71,7 +79,27 @@ func record() -> bool:
 	Settings.best_score = maxi(Settings.best_score, GameState.score)
 	Settings.best_nights = maxi(Settings.best_nights, GameState.nights_survived)
 	Settings.save_settings()
+	_check_unlocks()
 	return new_best
+
+
+## Batch 2: newly unlocked characters get a banner (once).
+func _check_unlocks() -> void:
+	for id in Characters.unlocked_ids():
+		if not _unlocked_before.has(id):
+			_unlocked_before.append(id)
+			_new_unlocks.append(id)
+			get_tree().call_group(&"hud", &"show_banner", "NEW SURVIVOR UNLOCKED",
+				"%s - pick them in the main menu." % Characters.display_name(id))
+			get_tree().call_group(&"session_log", &"log_event", "unlock", String(id))
+
+
+## Unlocks since the last call (for the dawn summary).
+func take_new_unlocks() -> Array[StringName]:
+	_check_unlocks()
+	var out: Array[StringName] = _new_unlocks.duplicate()
+	_new_unlocks.clear()
+	return out
 
 
 func _on_item_taken(container_id: StringName, item_id: StringName, quantity: int) -> void:

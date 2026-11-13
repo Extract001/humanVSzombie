@@ -33,6 +33,15 @@ const BASE_SIZE := Vector2i(640, 360)
 ## The most world the game shows at once (keeps fights readable on unusual screens).
 const MAX_VIEW := Vector2i(860, 484)
 var best_nights: int = 0
+## Batch 2: lifetime records (unlock characters), the menu's character pick, daily bests
+## ("2026-11-13" -> score) and the playtest log switch.
+var lifetime_kills: int = 0
+var lifetime_rescued: int = 0
+var runs_played: int = 0
+var selected_character: StringName = &"rook"
+var daily_best: Dictionary = {}
+## Playtest mode: writes a local log of each session and asks "how fun was that?" (nothing is sent anywhere).
+var playtest_mode: bool = true
 
 ## The project's default bindings (copied at startup, before anything is changed).
 var _defaults: Dictionary = {}
@@ -89,6 +98,13 @@ func load_settings(path: String = config_path) -> void:
 	flashlight_shadows = bool(cfg.get_value("display", "flashlight_shadows", flashlight_shadows))
 	best_score = int(cfg.get_value("records", "best_score", 0))
 	best_nights = int(cfg.get_value("records", "best_nights", 0))
+	lifetime_kills = int(cfg.get_value("records", "lifetime_kills", 0))
+	lifetime_rescued = int(cfg.get_value("records", "lifetime_rescued", 0))
+	runs_played = int(cfg.get_value("records", "runs_played", 0))
+	selected_character = StringName(str(cfg.get_value("records", "character", "rook")))
+	var db: Variant = cfg.get_value("records", "daily_best", {})
+	daily_best = (db as Dictionary).duplicate() if db is Dictionary else {}
+	playtest_mode = bool(cfg.get_value("general", "playtest_mode", playtest_mode))
 	for a in REBINDABLE:
 		if not cfg.has_section_key("controls", String(a[0])):
 			continue
@@ -109,6 +125,12 @@ func save_settings(path: String = config_path) -> void:
 	cfg.set_value("display", "flashlight_shadows", flashlight_shadows)
 	cfg.set_value("records", "best_score", best_score)
 	cfg.set_value("records", "best_nights", best_nights)
+	cfg.set_value("records", "lifetime_kills", lifetime_kills)
+	cfg.set_value("records", "lifetime_rescued", lifetime_rescued)
+	cfg.set_value("records", "runs_played", runs_played)
+	cfg.set_value("records", "character", String(selected_character))
+	cfg.set_value("records", "daily_best", daily_best)
+	cfg.set_value("general", "playtest_mode", playtest_mode)
 	for a in REBINDABLE:
 		var ev: InputEvent = primary_event(a[0])
 		if ev != null and not _same(ev, _default_primary(a[0])):

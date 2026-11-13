@@ -2,6 +2,44 @@
 
 ## [Unreleased]
 
+### Batch 2 — Survivors with jobs, unlockable characters, daily challenge, playtest kit (2026-11-13) — IMPLEMENTED + TESTED (automated); not yet VERIFIED
+Long-term goals: a reason to come back tomorrow, and a way to learn from real players.
+- **Survivors with jobs.** From day 2, one survivor gets on the radio each morning (banner, green **SURVIVOR** arrow, a few zombies already there). Find them, press E, and they follow you; walk them into the safehouse (+150 points). At home they work:
+  - **Tomas, Mechanic** (day 2, house east): at dusk, one free plank on every window that isn't full; planks +25%.
+  - **Amara, Doctor** (day 3, pharmacy): every dawn, full health and a bandage in the stash.
+  - **Pip, Scavenger** (day 4, grocery): every dawn, 3 finds in the stash.
+  - **Hale, Guard** (day 5, checkpoint): at night, shoots zombies near the safehouse.
+  - They can die: each window the horde breaks during the night gives a 30% chance that someone is killed (15% with Hale home; at most one a night). Shown in the dawn summary.
+- **Unlockable characters** (main menu, PLAY AS):
+  - **Rook**, Courier: the all-rounder.
+  - **Mara**, Nurse: medkit and 2 bandages, full health after a death. Unlock: survive 3 nights.
+  - **Dex**, Bouncer: +30 health, stronger and faster shoves, a bit slower. Unlock: 150 kills over all runs.
+  - **Kit**, Runner: fast, quiet, more stamina, 80 health. Unlock: 2500 points in one run.
+  - **Sol**, Carpenter: planks +30%, 4 scrap. Unlock: rescue 3 survivors over all runs.
+  - New unlocks get a banner and a line at dawn.
+  - For now each character is told apart by a colour tint; real art comes in Batch 3.
+- **Daily challenge** (main menu):
+  - Same town and same twist for everyone on that date, **one life**, best score per day kept.
+  - Twists: Swarm (+50% horde), Glass Bones (60 health, points ×1.5), Dead Batteries (half battery, lamp dead), Heavy Hitters (a Brute in every horde), Short Days (days 40% shorter).
+  - It has its own save file, so your main game is never touched.
+- **Playtest kit:**
+  - Settings → Playtest mode (on by default in this build). It keeps a local log `playtest_log.csv` (events plus one row per minute: kills, metres walked, "quiet" minutes) and `playtest_summary.txt` (length, deaths and what killed you, nights, quiet minutes, rating).
+  - A "how fun was it? 1–5" question on the death screen and in the pause menu.
+  - New guide: `documentation/PLAYTEST_GUIDE.md`. Nothing is sent anywhere.
+- Banners now queue (supply drop, survivor, unlock), so they no longer replace each other.
+- Tests: 204 (11 new in `tests/test_batch2.gd`). Tests and tools always use Rook and never touch your records or playtest log.
+
+### Batch 1 — Brutes, Screamers, special nights, supply drops (2026-11-13) — IMPLEMENTED + TESTED (automated); not yet VERIFIED
+So that nights stop feeling the same and the town keeps giving you reasons to go out.
+- **Brute** (big, brown, a head taller): 180 HP, slow, bites for 20, barely staggers when shoved, breaks a whole plank per hit and bursts ordinary doors open after 4 bangs (locked gates hold). 60 points.
+- **Screamer** (pale, small, 35 HP): when it sees you it shrieks, and every zombie within ~32 tiles comes running. Kill it first. 40 points. A scream is not your noise: no Heat.
+- **A special night most nights**, announced at dusk with a big banner and kept on the HUD (night 1 is always calm, never the same event twice in a row): **Brute Night** (1 Brute, 2 from night 5), **Screamers** (30% of the horde), **Fog** (grey night, +25% horde, half of them fast Lurchers), **Blackout** (the safehouse lamp is dead), **Blood Moon** (red night, +50% horde, every kill scores double).
+- **Supply drops:** every morning from day 2 a crate comes down somewhere in town, marked by a red flare, smoke and a **yellow DROP arrow**: ammo, shotgun shells, medkits, scrap, batteries. A few zombies are already there (a Brute from day 4). The next morning's drop replaces it.
+- Long messages now wrap on two lines in smaller letters instead of running off the screen.
+- New original sounds: scream, supply drop, night-event sting.
+- Measured (siege scenarios, bat-and-boards bot): Brute night 4 no damage taken; Brute night 6 about 144 damage (hard, by design); Screamers/Fog/Blood Moon nights at night 4–5 0–10 damage.
+- Tests: 193 (6 new in `tests/test_batch1.gd`).
+
 ### Slice 2 — Perks, Your Echo, shotgun & fire axe, intro (2026-11-13) — IMPLEMENTED + TESTED (automated); not yet VERIFIED
 From my rating's "what would raise it": progression, variety and a story hook.
 - **Perk cards every dawn:** after the night summary pick 1 of 3 cards (click or keys 1/2/3); each perk can be taken twice. 13 perks: Quiet Feet, Iron Lungs, Fleet Foot, Thick Skin, Heavy Hands, Sharpshooter, Steady Hands, Scavenger, Carpenter, Deep Pockets, Night Owl, Bloodlust, Shove Master. Your perks are listed in the pause menu. Saved.

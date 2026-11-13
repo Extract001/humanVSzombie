@@ -37,6 +37,11 @@ var score_keeper: ScoreKeeper
 var population: Population
 ## Slice 2
 var echo_manager: EchoManager
+## Batch 1
+var supply_drops: SupplyDrops
+## Batch 2
+var survivors: Survivors
+var session_log: SessionLog
 var _last_backpack: StringName = &""
 
 var elapsed: float = 0.0
@@ -99,6 +104,15 @@ func _ready() -> void:
 	echo_manager.name = "EchoManager"
 	add_child(echo_manager)
 	echo_manager.setup(self, player, world.get_node("Actors"))
+	supply_drops = SupplyDrops.new()
+	supply_drops.name = "SupplyDrops"
+	add_child(supply_drops)
+	supply_drops.setup(self, player, world.get_node("Actors"))
+	survivors = Survivors.new()
+	survivors.name = "Survivors"
+	add_child(survivors)
+	survivors.setup(self, player, world.get_node("Actors"))
+	player.sprite.self_modulate = Characters.tint(GameState.character)   # placeholder look per character
 
 	Soundscape.player = player
 	hud.bind(player)
@@ -125,6 +139,10 @@ func _ready() -> void:
 	for panel in [loot_panel, inventory_panel, stash_panel, objectives_panel, ending_panel, pause_menu, dawn_panel]:
 		panel.opened.connect(_update_ui_mode)
 		panel.closed.connect(_update_ui_mode)
+	session_log = SessionLog.new()
+	session_log.name = "SessionLog"
+	add_child(session_log)
+	session_log.setup(self, player)
 	_restore_from_save()
 	_was_in_safehouse = is_in_safehouse()
 	game_over.respawn_requested.connect(respawn_player)
@@ -207,6 +225,18 @@ func _play_intro() -> void:
 		intro.queue_free())
 
 
+## Batch 2: the character's starting gear goes in the bag; one more run on the record.
+func _give_start_gear() -> void:
+	var gear: Dictionary = Characters.info(GameState.character).gear
+	for id in gear:
+		var left: int = player.inventory.add_item(id, int(gear[id]))
+		if left > 0:
+			GameState.stash_add(id, left)
+	if not GameState.records_disabled:
+		Settings.runs_played += 1
+		Settings.save_settings()
+
+
 func on_zombie_killed(_z: Zombie) -> void:
 	_on_zombie_died()
 
@@ -224,6 +254,10 @@ func _on_player_died() -> void:
 	if not player.is_dead():
 		return
 	crosshair.visible = false
+	if DailyChallenge.is_daily():
+		var new_best: bool = DailyChallenge.record(GameState.score)
+		game_over.show_daily(GameState.score, DailyChallenge.best_today(), new_best, GameState.nights_survived)
+		return
 	var lost := 0
 	var contents: Array = GameState.get_contents(_last_backpack)
 	for e in contents:
@@ -297,10 +331,14 @@ func try_sleep() -> bool:
 
 ## Slice 1: a night was survived. Save first (the summary pauses the game), then show it.
 func _on_dawn(summary: Dictionary) -> void:
+	summary["survivor_lines"] = survivors.on_dawn(summary)
 	summary["night_points"] = score_keeper.on_night_survived(int(summary.night))
 	summary["score"] = GameState.score
 	summary["new_best"] = score_keeper.record()
 	summary["best"] = Settings.best_score
+	summary["unlocked"] = score_keeper.take_new_unlocks()
+	if DailyChallenge.is_daily():
+		DailyChallenge.record(GameState.score)
 	save_now("dawn")
 	dawn_panel.show_summary(summary)
 
@@ -322,6 +360,7 @@ func can_pause() -> bool:
 func go_to_main_menu() -> void:
 	if is_in_safehouse() and not player.is_dead():
 		save_now("menu")
+	session_log.write_summary("quit to the menu")
 	get_tree().paused = false
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE)
 
@@ -388,6 +427,7 @@ func _restore_from_save() -> void:
 	if SaveSystem.pending_player.is_empty():
 		if SaveSystem.fresh_start:   # a brand-new game replaces the old save straight away
 			SaveSystem.fresh_start = false
+			_give_start_gear()
 			save_now.call_deferred("new_game")
 			if not GameState.intro_disabled:
 				_play_intro.call_deferred()

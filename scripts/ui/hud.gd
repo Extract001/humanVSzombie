@@ -36,6 +36,15 @@ var score_label: Label
 var streak_label: Label
 var hurt_flash: TextureRect
 var goal_marker: Control
+## Batch 1: second arrow (supply drop) and the big announcement banner.
+var drop_marker: Control
+var banner: VBoxContainer
+var _banner_title: Label
+var _banner_sub: Label
+var _banner_tween: Tween
+## Batch 2: banners that arrive while one is showing wait their turn; green survivor arrow.
+var _banner_queue: Array = []
+var survivor_marker: Control
 var _heartbeat_left: float = 0.0
 var _noise_hold: float = 0.0
 
@@ -126,6 +135,33 @@ func _build_fun_widgets() -> void:
 	goal_marker.name = "GoalMarker"
 	goal_marker.set_script(load("res://scripts/ui/goal_marker.gd"))
 	root.add_child(goal_marker)
+	drop_marker = Control.new()
+	drop_marker.name = "DropMarker"
+	drop_marker.set_script(load("res://scripts/ui/goal_marker.gd"))
+	root.add_child(drop_marker)
+	survivor_marker = Control.new()
+	survivor_marker.name = "SurvivorMarker"
+	survivor_marker.set_script(load("res://scripts/ui/goal_marker.gd"))
+	root.add_child(survivor_marker)
+	banner = VBoxContainer.new()
+	banner.name = "Banner"
+	banner.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	banner.offset_left = -200
+	banner.offset_right = 200
+	banner.offset_top = 228   # below the player, clear of the objective list and the toast
+	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner.modulate.a = 0.0
+	_banner_title = UiKit.label("", 20, Color(1.0, 0.45, 0.35))
+	_banner_sub = UiKit.label("", 10, UiKit.TEXT)
+	for l in [_banner_title, _banner_sub]:
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		l.add_theme_color_override(&"font_shadow_color", Color(0, 0, 0, 0.9))
+		l.add_theme_constant_override(&"shadow_offset_x", 2)
+		l.add_theme_constant_override(&"shadow_offset_y", 2)
+		banner.add_child(l)
+	_banner_sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_banner_sub.custom_minimum_size = Vector2(400, 0)
+	root.add_child(banner)
 	# A method (not a lambda): autoload signals drop method connections when the HUD is freed.
 	GameState.score_changed.connect(_on_score_changed)
 	_on_score_changed(GameState.score)
@@ -152,6 +188,47 @@ func _layout_top_right() -> void:
 func bind_game(game: Node) -> void:
 	if goal_marker != null:
 		goal_marker.game = game
+	if drop_marker != null and game.get("supply_drops") != null:
+		drop_marker.game = game
+		drop_marker.provider = game.supply_drops.target
+		drop_marker.color = Color(1.0, 0.85, 0.3)
+		drop_marker.ring_radius = 66.0
+	if survivor_marker != null and game.get("survivors") != null:
+		survivor_marker.game = game
+		survivor_marker.provider = game.survivors.target
+		survivor_marker.color = Color(0.5, 1.0, 0.6)
+		survivor_marker.ring_radius = 80.0
+
+
+## Batch 1: a big two-line announcement in the upper middle ("TONIGHT: BRUTE NIGHT").
+func show_banner(title: String, subtitle: String = "") -> void:
+	if banner == null:
+		return
+	if _banner_tween != null and _banner_tween.is_valid() and _banner_tween.is_running():
+		if _banner_queue.size() < 4 and not (_banner_title.text == title and _banner_sub.text == subtitle):
+			_banner_queue.append([title, subtitle])
+		return
+	_banner_title.text = title
+	_banner_sub.text = subtitle
+	if _banner_tween != null:
+		_banner_tween.kill()
+	banner.modulate.a = 0.0
+	banner.scale = Vector2(1.15, 1.15)
+	banner.pivot_offset = Vector2(200, 12)
+	_banner_tween = create_tween()
+	_banner_tween.set_parallel(true)
+	_banner_tween.tween_property(banner, "modulate:a", 1.0, 0.3)
+	_banner_tween.tween_property(banner, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_banner_tween.chain().tween_interval(3.5)
+	_banner_tween.chain().tween_property(banner, "modulate:a", 0.0, 0.8)
+	_banner_tween.chain().tween_callback(_next_banner)
+
+
+func _next_banner() -> void:
+	_banner_tween = null
+	if not _banner_queue.is_empty():
+		var b: Array = _banner_queue.pop_front()
+		show_banner(b[0], b[1])
 
 
 func show_streak(streak: int) -> void:
@@ -294,6 +371,10 @@ func show_prompt(text: String) -> void:
 ## A short message in the middle of the screen that fades out (location names, "It's locked.").
 func show_toast(text: String) -> void:
 	toast_label.text = text
+	# Long messages: smaller letters, wrapped on two lines (never cut off at the screen edge).
+	var long: bool = text.length() > 34
+	toast_label.add_theme_font_size_override(&"font_size", 10 if long else 20)
+	toast_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if long else TextServer.AUTOWRAP_OFF
 	if _toast_tween != null:
 		_toast_tween.kill()
 	toast_label.modulate.a = 1.0
@@ -337,6 +418,10 @@ func bind_cycle(cycle: DayCycle) -> void:
 	_update_cycle_labels()
 
 
+func _event_prefix() -> String:
+	return "" if GameState.night_event == NightEvents.NONE else NightEvents.title(GameState.night_event) + "  -  "
+
+
 func _update_cycle_labels() -> void:
 	if _cycle == null:
 		return
@@ -349,11 +434,11 @@ func _update_cycle_labels() -> void:
 		GameState.Phase.DUSK:
 			clock_label.text = "DUSK   %s   -   night in %d s" % [_cycle.clock_text(), ceili(_cycle.time_left())]
 			clock_label.add_theme_color_override(&"font_color", Color(1.0, 0.7, 0.45))
-			heat_label.text = "HEAT %d  -  tonight: ~%d of them" % [roundi(GameState.heat), _cycle.horde_estimate()]
+			heat_label.text = "%sHEAT %d  -  tonight: ~%d of them" % [_event_prefix(), roundi(GameState.heat), _cycle.horde_estimate()]
 		_:
 			clock_label.text = "NIGHT %d   %s   -   dawn in %d s" % [night_no, _cycle.clock_text(), ceili(_cycle.time_left())]
 			clock_label.add_theme_color_override(&"font_color", Color(0.75, 0.8, 1.0))
-			heat_label.text = "Walkers left tonight: %d" % _cycle.horde_alive()
+			heat_label.text = "%sLeft tonight: %d" % [_event_prefix(), _cycle.horde_alive()]
 
 
 ## Short fade to black and back (sleeping).

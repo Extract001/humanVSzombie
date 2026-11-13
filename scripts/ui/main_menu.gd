@@ -19,10 +19,20 @@ var _dialog_yes: Button
 var _dialog_no: Button
 var _dialog_action: Callable
 var save_label: Label
+## Batch 2: daily challenge and character picker.
+var daily_button: Button
+var daily_label: Label
+var char_panel: PanelContainer
+var char_name: Label
+var char_text: Label
+var char_lock: Label
+var _char_index: int = 0
 
 
 func _ready() -> void:
 	get_tree().paused = false
+	SaveSystem.path = SaveSystem.DEFAULT_PATH   # the daily run has its own file
+	GameState.mode = &"normal"
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	Soundscape.player = null
 	Soundscape.set_mood("menu")
@@ -40,8 +50,8 @@ func _ready() -> void:
 	box.set_anchors_and_offsets_preset(Control.PRESET_CENTER_LEFT)
 	box.offset_left = 60
 	box.offset_right = 260
-	box.offset_top = -110
-	box.offset_bottom = 110
+	box.offset_top = -140
+	box.offset_bottom = 140
 	box.add_theme_constant_override(&"separation", 6)
 	add_child(box)
 	var title := UiKit.title("LAST SIGNAL")
@@ -57,6 +67,15 @@ func _ready() -> void:
 	continue_button = _menu_button(box, "Continue", continue_game)
 	save_label = UiKit.label("", 10, UiKit.TEXT.darkened(0.3))
 	box.add_child(save_label)
+	daily_button = _menu_button(box, "Daily challenge", start_daily)
+	var mod: StringName = DailyChallenge.modifier_for(DailyChallenge.today())
+	daily_label = UiKit.label("Today: %s - %s\nOne life. Same town for everyone today.%s" % [DailyChallenge.title(mod),
+		DailyChallenge.description(mod), ("\nYour best today: %d" % DailyChallenge.best_today()) if DailyChallenge.best_today() > 0 else ""],
+		10, Color(1.0, 0.7, 0.45))
+	daily_label.name = "DailyLabel"
+	daily_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	daily_label.custom_minimum_size = Vector2(200, 0)
+	box.add_child(daily_label)
 	settings_button = _menu_button(box, "Settings", func() -> void: settings_menu.open())
 	credits_button = _menu_button(box, "Credits", show_credits)
 	exit_button = _menu_button(box, "Exit", func() -> void: get_tree().quit())
@@ -68,6 +87,7 @@ func _ready() -> void:
 	footer.offset_bottom = -4
 	footer.offset_right = 400
 	add_child(footer)
+	_build_character_panel()
 	_build_credits()
 	_build_dialog()
 	settings_menu.closed.connect(func() -> void: new_button.grab_focus())
@@ -97,13 +117,23 @@ func ask_new_game() -> void:
 
 
 func start_new_game() -> void:
+	SaveSystem.path = SaveSystem.DEFAULT_PATH
 	GameState.new_game()
 	SaveSystem.pending_player = {}
 	SaveSystem.fresh_start = true
 	get_tree().change_scene_to_file(GAME_SCENE)
 
 
+## Batch 2: today's daily challenge (its own save file; your main game is not touched).
+func start_daily() -> void:
+	if not Characters.is_unlocked(Settings.selected_character):
+		Settings.selected_character = Characters.ROOK
+	DailyChallenge.begin()
+	get_tree().change_scene_to_file(GAME_SCENE)
+
+
 func continue_game() -> void:
+	SaveSystem.path = SaveSystem.DEFAULT_PATH
 	var r: Dictionary = SaveSystem.load_game()
 	if r.ok:
 		get_tree().change_scene_to_file(GAME_SCENE)
@@ -154,6 +184,89 @@ func _build_dialog() -> void:
 		new_button.grab_focus())
 	_dialog_no.name = "No"
 	row.add_child(_dialog_no)
+
+
+# ---------------- Batch 2: character picker ----------------
+
+func _build_character_panel() -> void:
+	char_panel = PanelContainer.new()
+	char_panel.name = "CharacterPanel"
+	char_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_RIGHT)
+	char_panel.offset_left = -250
+	char_panel.offset_right = -24
+	char_panel.offset_top = -86
+	char_panel.offset_bottom = 86
+	add_child(char_panel)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override(&"separation", 4)
+	char_panel.add_child(box)
+	box.add_child(UiKit.label("PLAY AS", 10, UiKit.TEXT.darkened(0.25)))
+	var row := HBoxContainer.new()
+	box.add_child(row)
+	var prev: Button = UiKit.button("<", func() -> void: cycle_character(-1))
+	prev.name = "PrevCharacter"
+	row.add_child(prev)
+	char_name = UiKit.label("", 10, Color(1, 0.88, 0.45))
+	char_name.name = "CharacterName"
+	char_name.custom_minimum_size = Vector2(150, 0)
+	char_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	row.add_child(char_name)
+	var next: Button = UiKit.button(">", func() -> void: cycle_character(1))
+	next.name = "NextCharacter"
+	row.add_child(next)
+	var portrait := Control.new()
+	portrait.custom_minimum_size = Vector2(200, 40)
+	portrait.draw.connect(_draw_portrait.bind(portrait))
+	portrait.name = "Portrait"
+	box.add_child(portrait)
+	char_text = UiKit.label("", 10)
+	char_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	char_text.custom_minimum_size = Vector2(210, 0)
+	box.add_child(char_text)
+	char_lock = UiKit.label("", 10, Color(0.62, 0.86, 0.9))
+	char_lock.name = "CharacterLock"
+	char_lock.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	char_lock.custom_minimum_size = Vector2(210, 0)
+	box.add_child(char_lock)
+	_char_index = maxi(0, Characters.ORDER.find(Settings.selected_character))
+	refresh_character()
+
+
+func cycle_character(step: int) -> void:
+	_char_index = posmod(_char_index + step, Characters.ORDER.size())
+	var id: StringName = Characters.ORDER[_char_index]
+	if Characters.is_unlocked(id):
+		Settings.selected_character = id
+		Settings.save_settings()
+	AudioManager.play_ui()
+	refresh_character()
+
+
+func refresh_character() -> void:
+	var id: StringName = Characters.ORDER[_char_index]
+	var unlocked: bool = Characters.is_unlocked(id)
+	char_name.text = Characters.display_name(id).to_upper() if unlocked else "LOCKED"
+	char_text.text = Characters.info(id).blurb if unlocked else "???"
+	if unlocked:
+		char_lock.text = "Selected for the next run." if Settings.selected_character == id else ""
+	else:
+		char_lock.text = "Unlock: " + Characters.progress_text(id)
+	for c in char_panel.find_children("Portrait", "", true, false):
+		(c as Control).queue_redraw()
+
+
+## The character's sprite (the first idle frame), big, in their colours; a dark silhouette if locked.
+func _draw_portrait(c: Control) -> void:
+	var id: StringName = Characters.ORDER[_char_index]
+	var frames: SpriteFrames = load("res://assets/sprites/player_frames.tres")
+	var tex: Texture2D = frames.get_frame_texture(&"idle_down", 0)
+	if tex == null:
+		return
+	var col: Color = Characters.tint(id) if Characters.is_unlocked(id) else Color(0.08, 0.08, 0.08)
+	var s: Vector2 = tex.get_size() * 2.0
+	var at := Vector2((c.size.x - s.x) * 0.5, (c.size.y - s.y) * 0.5)
+	c.draw_rect(Rect2(Vector2(c.size.x * 0.5 - 24, c.size.y - 3), Vector2(48, 3)), Color(0, 0, 0, 0.35))
+	c.draw_texture_rect(tex, Rect2(at, s), false, col)
 
 
 func show_credits() -> void:
@@ -216,7 +329,7 @@ static func credits_text() -> String:
 
 func _draw_signal(c: Control) -> void:
 	# A quiet radio-wave motif on the right side of the screen.
-	var centre := Vector2(c.size.x * 0.78, c.size.y * 0.5)
+	var centre := Vector2(c.size.x * 0.5, c.size.y * 0.5)
 	for i in 6:
 		var r: float = 24.0 + i * 22.0
 		c.draw_arc(centre, r, -0.6, 0.6, 24, Color(0.62, 0.86, 0.9, 0.22 - i * 0.03), 1.0)
